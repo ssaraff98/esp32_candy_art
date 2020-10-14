@@ -22,7 +22,7 @@
 #include "sdkconfig.h"
 
 /************************
-* DEFINES
+* MACROS
 *************************/
 
 // I2C Variables
@@ -39,6 +39,8 @@
 #define SCL_PIN                 22              // I2C SCL pin on ESP32 NodeMCU
 
 #define CLK_SPEED               400000          // Fast transmission speed - 400Kbit/s
+
+#define TICK_RATE_MS            100             // Same as portTICK_RATE_MS
 
 // TCS34725 Variables
 #define TCS34725_ADDRESS        0x29            // Slave address given in TCS34725 datasheet
@@ -73,6 +75,13 @@
 #define COMMAND_BIT             0x80            // Command bit specifies register address
 #define RESET_REGISTERS         0x00            // Reset value for all registers except ATIME and WTIME
 
+// Skittle Color Variables
+#define RED                     0xFF0213        // (255,   2, 19) -> (127,   0,  0) !!! CHANGE !!!
+#define ORANGE                  0xFF0213        // (255,  79,  0) -> (255,  63, 32) !!! CHANGE !!!
+#define YELLOW                  0xFF0213        // (255, 218,  0) -> (255, 128, 42) !!! CHANGE !!!
+#define GREEN                   0xFF0213        // (102, 204,  0) -> (109, 109, 36) !!! CHANGE !!!
+#define PURPLE                  0xFF0213        // ( 51,   0, 51) -> (127,  64, 64) !!! CHANGE !!!
+
 /************************
 * STRUCTS
 *************************/
@@ -99,23 +108,23 @@ typedef struct tcs34725 {
 } tcs34725_t;
 
 typedef struct tcs34725_rgbc_data {
-    uint16_t *red;
-    uint16_t *green;
-    uint16_t *blue;
-    uint16_t *clear;
+    uint16_t red;
+    uint16_t green;
+    uint16_t blue;
+    uint16_t clear;
 } tcs34725_rgbc_data_t;
 
 /************************
 * FUNCTION DEFINITIONS
 *************************/
-esp_err_t i2c_master_init(i2c_port_t i2c_num);
 esp_err_t _i2c_master_read_slave_register(i2c_port_t i2c_num, uint8_t i2c_register, uint8_t *data_read, size_t size);
 esp_err_t _i2c_master_write_slave_register(i2c_port_t i2c_num, uint8_t i2c_register, uint8_t data_write, size_t size);
-esp_err_t tcs34725_enable(i2c_port_t i2c_num);
-esp_err_t tcs34725_disable(i2c_port_t i2c_num);
-esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_integration_time_t integration_time, tcs34725_gain_t gain);
+esp_err_t _tcs34725_enable(i2c_port_t i2c_num);
+esp_err_t _tcs34725_disable(i2c_port_t i2c_num);
 uint16_t _convert_from_uint8_to_uint16(uint8_t low_byte, uint8_t high_byte);
-void _check_normalized_color(float red, float green, float blue);
-esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor);
+esp_err_t i2c_master_init(i2c_port_t i2c_num);
+esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_integration_time_t integration_time, tcs34725_gain_t gain);
+esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_rgbc_data_t *rgbc_values);
+esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag);
 
 #endif
