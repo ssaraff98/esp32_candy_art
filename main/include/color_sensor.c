@@ -6,17 +6,6 @@
 
 #include "color_sensor.h"
 
-/*************************************** MACROS ****************************************/
-
-// Error checking
-#define CHECK(x) do { \
-	esp_err_t ret = (x); \
-	if (ret != ESP_OK) { \
-		printf("R/W Error"); \
-		return ret; \
-	} \
-} while (0)
-
 /*********************************** HELPER FUNCTIONS ***********************************/
 
 /*************************************************
@@ -74,10 +63,10 @@ esp_err_t _i2c_master_write_slave_register(i2c_port_t i2c_num, uint8_t i2c_regis
  * Enabling TCS34725 sensor
  ************************************/
 esp_err_t _tcs34725_enable(i2c_port_t i2c_num) {
-	CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE, 1));
+	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE, 1));
 	vTaskDelay(10);
 
-	CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE | AEN_ENABLE, 1));
+	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE | AEN_ENABLE, 1));
 	vTaskDelay(10);
 
 	return ESP_OK;
@@ -89,8 +78,8 @@ esp_err_t _tcs34725_enable(i2c_port_t i2c_num) {
 esp_err_t _tcs34725_disable(i2c_port_t i2c_num) {
 	uint8_t register_status = 0;
 
-	CHECK(_i2c_master_read_slave_register(i2c_num, ENABLE_ADDRESS, &register_status, 1));
-	CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, register_status & ~(PON_ENABLE | AEN_ENABLE), 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, ENABLE_ADDRESS, &register_status, 1));
+	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, register_status & ~(PON_ENABLE | AEN_ENABLE), 1));
 
 	return ESP_OK;
 }
@@ -134,7 +123,7 @@ esp_err_t i2c_master_init(i2c_port_t i2c_num) {
 esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_integration_time_t integration_time, tcs34725_gain_t gain) {
 	// Checking if master is connected to slave
 	uint8_t id;
-	CHECK(_i2c_master_read_slave_register(i2c_num, ID_ADDRESS, &id, 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, ID_ADDRESS, &id, 1));
 	if (id != TCS34725_ID) {
 		printf("Sensor not connected.\n");
 		return ESP_FAIL;
@@ -147,15 +136,15 @@ esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_int
 	sensor->initialized = true;
 
 	// Setting slave integration time
-	CHECK(_i2c_master_write_slave_register(i2c_num, ATIME_ADDRESS, integration_time, 1));
+	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ATIME_ADDRESS, integration_time, 1));
 	sensor->time = integration_time;
 
 	// Setting slave gain
-	CHECK(_i2c_master_write_slave_register(i2c_num, CONTROL_ADDRESS, gain, 1));
+	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, CONTROL_ADDRESS, gain, 1));
 	sensor->gain = gain;
 
 	// Enabling device
-	CHECK(_tcs34725_enable(i2c_num));
+	ESP_ERROR_CHECK(_tcs34725_enable(i2c_num));
 
 	return ESP_OK;
 }
@@ -169,24 +158,31 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 		return ESP_FAIL;
 	}
 
-	uint8_t red[2];
-	uint8_t green[2];
-	uint8_t blue[2];
-	uint8_t clear[2];
+	uint8_t red_l, red_h, green_l, green_h, blue_l, blue_h, clear_l, clear_h;
 
-	// Reading 16 bit RGBC values from registers
-	CHECK(_i2c_master_read_slave_register(i2c_num, R_DATA_L, red, 2));
-	CHECK(_i2c_master_read_slave_register(i2c_num, G_DATA_L, green, 2));
-	CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, blue, 2));
-	CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, clear, 2));
+	// Getting low and high bits of red
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, R_DATA_L, &red_l, 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, R_DATA_H, &red_h, 1));
+
+	// Getting low and high bits of green
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, G_DATA_L, &green_l, 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, G_DATA_H, &green_h, 1));
+
+	// Getting low and high bits of blue
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, &blue_l, 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_H, &blue_h, 1));
+
+	// Getting low and high bits of clear
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, &clear_l, 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_H, &clear_h, 1));
 
 	vTaskDelay(10);
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
-	rgbc_values->red = _convert_from_uint8_to_uint16(red[0], red[1]);
-	rgbc_values->blue = _convert_from_uint8_to_uint16(blue[0], blue[1]);
-	rgbc_values->green = _convert_from_uint8_to_uint16(green[0], green[1]);
-	rgbc_values->clear = _convert_from_uint8_to_uint16(clear[0], clear[1]);
+	rgbc_values->red = _convert_from_uint8_to_uint16(red_l, red_h);
+	rgbc_values->green = _convert_from_uint8_to_uint16(green_l, green_h);
+	rgbc_values->blue = _convert_from_uint8_to_uint16(blue_l, blue_h);
+	rgbc_values->clear = _convert_from_uint8_to_uint16(clear_l, clear_h);
 
 	return ESP_OK;
 }
@@ -196,7 +192,7 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
  *******************************************/
 esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag) {
 	uint8_t value;
-	CHECK(_i2c_master_read_slave_register(i2c_num, ENABLE_ADDRESS, &value, 1));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, ENABLE_ADDRESS, &value, 1));
 
 	if (flag) {
 		value |= AIEN_ENABLE;
@@ -205,6 +201,6 @@ esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag) {
 		value &= ~AIEN_ENABLE;
 	}
 
-	CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, value, 1));
+	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, value, 1));
 	return ESP_OK;
 }

@@ -7,15 +7,14 @@
  ************************************/
 void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values) {
 	// Normalizing RGBC colors to 0-255
-	//uint32_t sum = rgbc_values->clear;
-	float max = (float)rgbc_values->red;
-	if(rgbc_values->red < rgbc_values->blue && rgbc_values->green < rgbc_values->blue)
-		max = (float)rgbc_values->blue;
-	else if(rgbc_values->red < rgbc_values->green && rgbc_values->blue < rgbc_values->green)
-		max = (float)rgbc_values->green;
+	uint32_t max = rgbc_values->clear;
+	// float max = (float)rgbc_values->red;
+	// if(rgbc_values->red < rgbc_values->blue && rgbc_values->green < rgbc_values->blue)
+	// 	max = (float)rgbc_values->blue;
+	// else if(rgbc_values->red < rgbc_values->green && rgbc_values->blue < rgbc_values->green)
+	// 	max = (float)rgbc_values->green;
 
 	if (rgbc_values->clear == 0) {
-		printf("Color detected is black\n");
 		return;
 	}
 
@@ -33,7 +32,7 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values) {
 /***************************************
  * Testing color sensor functionality
  ***************************************/
-void app_main(void) {
+void tcs34725_task(void *ignore) {
 	i2c_master_init(I2C_PORT_NUM);
 
 	tcs34725_t sensor;
@@ -45,18 +44,32 @@ void app_main(void) {
 		return;
 	}
 
-	tcs34725_rgbc_data_t rgbc_values;
+	while (1) {
+		tcs34725_rgbc_data_t rgbc_values;
+		rgbc_values.red = NULL;
+		rgbc_values.green = NULL;
+		rgbc_values.blue = NULL;
+		rgbc_values.clear = NULL;
 
-	i2c_tcs34725_set_interrupt(I2C_PORT_NUM, false);		// Turning LED on
-	vTaskDelay(60);
+		//i2c_tcs34725_set_interrupt(I2C_PORT_NUM, false);		// Turning LED on
+		vTaskDelay(60);
 
-	ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
-    if (ret != ESP_OK) {
-		printf("Get RGB data error");
-		return;
+		ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
+		if (ret != ESP_OK) {
+			printf("Get RGB data error");
+			return;
+		}
+
+		//i2c_tcs34725_set_interrupt(I2C_PORT_NUM, true);		// Turning LED off
+		
+		check_rgb_color(&rgbc_values);
+
+		//vTaskDelay(60);
 	}
 
-	i2c_tcs34725_set_interrupt(I2C_PORT_NUM, true);		// Turning LED off
-	
-	check_rgb_color(&rgbc_values);
+	vTaskDelete(NULL);
+}
+
+void app_main() {
+	xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
 }
