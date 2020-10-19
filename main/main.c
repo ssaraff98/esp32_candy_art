@@ -9,32 +9,10 @@
 #define IMAGE_HEIGHT  8
 #define THRESHOLD	  20
 
-/*********************************************
- * Getting and reading pixel art image file
- *********************************************/
-void get_colors_from_pixel_file(char** pixel_info) {
-	char data[IMAGE_HEIGHT][IMAGE_WIDTH] = {
-		{'R', 'Y', 'O', 'R', 'O', 'Y', 'R', 'Y'}, 
-		{'Y', 'O', 'Y', 'G', 'P', 'G', 'O', 'G'}, 
-		{'O', 'R', 'O', 'Y', 'R', 'Y', 'P', 'Y'}, 
-		{'Y', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
-		{'O', 'Y', 'R', 'Y', 'P', 'Y', 'P', 'Y'}, 
-		{'P', 'G', 'O', 'G', 'R', 'O', 'G', 'R'}, 
-		{'R', 'Y', 'P', 'Y', 'P', 'Y', 'P', 'G'},
-		{'O', 'G', 'R', 'O', 'G', 'R', 'G', 'O'}
-	};
-
-	for (int i = 0; i < IMAGE_HEIGHT; i++) {
-		for (int j = 0; j < IMAGE_WIDTH; j++) {
-			pixel_info[i][j] = data[i][j];
-		}
-	}
-}
-
 /************************************
  * 
  ************************************/
-void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char** pixel_info) {
+void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH]) {
 	// Normalizing RGBC colors to 0-255
 	uint32_t max = rgbc_values->clear;
 
@@ -77,16 +55,20 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char** pixel_info) {
 	}
 
 	int row, column;
+	int flag = 0;
 
 	for (int i = IMAGE_HEIGHT - 1; i >= 0; i--) {
 		for (int j = 0; j < IMAGE_WIDTH; j++) {
-			printf(pixel_info[i][j]);
 			if (color == pixel_info[i][j]) {
 				row = i;
 				column = j;
 				pixel_info[i][j] = 'X';
+				flag = 1;
 				break;
 			}
+		}
+		if (flag == 1) {
+			break;
 		}
 	}
 
@@ -97,17 +79,6 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char** pixel_info) {
  * Testing color sensor functionality
  ***************************************/
 void tcs34725_task(void *ignore) {
-	char** pixel_info = (char**)malloc(IMAGE_HEIGHT * sizeof(char *));
-	for (int i = 0; i < IMAGE_HEIGHT; i++) {
-		pixel_info[i] = (char*)malloc(IMAGE_WIDTH * sizeof(char));
-	}
-
-	for (int i = 0; i < IMAGE_HEIGHT; i++) {
-		for (int j = 0; j < IMAGE_WIDTH; j++) {
-			printf(pixel_info[i][j]);
-		}
-	}
-
 	i2c_master_init(I2C_PORT_NUM);
 
 	tcs34725_t sensor;
@@ -119,13 +90,24 @@ void tcs34725_task(void *ignore) {
 		return;
 	}
 
+	char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH] = {
+		{'R', 'Y', 'O', 'R', 'O', 'Y', 'R', 'Y'}, 
+		{'Y', 'O', 'Y', 'G', 'P', 'G', 'O', 'G'}, 
+		{'O', 'R', 'O', 'Y', 'R', 'Y', 'P', 'Y'}, 
+		{'Y', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
+		{'O', 'Y', 'R', 'Y', 'P', 'Y', 'P', 'Y'}, 
+		{'P', 'G', 'O', 'G', 'R', 'O', 'G', 'R'}, 
+		{'R', 'Y', 'P', 'Y', 'P', 'Y', 'P', 'G'},
+		{'O', 'G', 'R', 'O', 'G', 'R', 'G', 'O'}
+	};
+
 	while (1) {
 		tcs34725_rgbc_data_t rgbc_values;
 		rgbc_values.red = NULL;
 		rgbc_values.green = NULL;
 		rgbc_values.blue = NULL;
 		rgbc_values.clear = NULL;
-		
+
 		//vTaskDelay(60);
 
 		ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
@@ -139,10 +121,6 @@ void tcs34725_task(void *ignore) {
 		vTaskDelay(100);
 	}
 
-	for (int i = 0; i < IMAGE_HEIGHT; i++) {
-		free(pixel_info[i]);
-	}
-	free(pixel_info);
 	vTaskDelete(NULL);
 }
 
