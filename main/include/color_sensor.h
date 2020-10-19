@@ -76,11 +76,11 @@
 #define RESET_REGISTERS         0x00            // Reset value for all registers except ATIME and WTIME
 
 // Skittle Color Variables
-#define RED                     0xFF0213        // (255,   2, 19) -> (127,   0,  0) !!! CHANGE !!!
-#define ORANGE                  0xFF0213        // (255,  79,  0) -> (255,  63, 32) !!! CHANGE !!!
-#define YELLOW                  0xFF0213        // (255, 218,  0) -> (255, 128, 42) !!! CHANGE !!!
-#define GREEN                   0xFF0213        // (102, 204,  0) -> (109, 109, 36) !!! CHANGE !!!
-#define PURPLE                  0xFF0213        // ( 51,   0, 51) -> (127,  64, 64) !!! CHANGE !!!
+// #define RED[]                   {170,  0,  0};
+// #define ORANGE[]                {204, 51, 51};
+// #define YELLOW[]                {127, 42, 42};
+// #define GREEN[]                 { 85, 85,  0};
+// #define PURPLE[]                {255,  0,  0};
 
 /************************
 * STRUCTS

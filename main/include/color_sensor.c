@@ -64,10 +64,10 @@ esp_err_t _i2c_master_write_slave_register(i2c_port_t i2c_num, uint8_t i2c_regis
  ************************************/
 esp_err_t _tcs34725_enable(i2c_port_t i2c_num) {
 	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE, 1));
-	vTaskDelay(10);
+	vTaskDelay(3);
 
 	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE | AEN_ENABLE, 1));
-	vTaskDelay(10);
+	vTaskDelay(154);
 
 	return ESP_OK;
 }
@@ -157,32 +157,32 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	if (!(sensor->initialized)) {
 		return ESP_FAIL;
 	}
+	
+	uint8_t red[2];
+	uint8_t green[2];
+	uint8_t blue[2];
+	uint8_t clear[2];
 
-	uint8_t red_l, red_h, green_l, green_h, blue_l, blue_h, clear_l, clear_h;
+	// Getting low and high bits of RGBC
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, R_DATA_L, red, 2));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, G_DATA_L, green, 2));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, blue, 2));
+	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, clear, 2));
 
-	// Getting low and high bits of red
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, R_DATA_L, &red_l, 1));
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, R_DATA_H, &red_h, 1));
+	// printf("Red: %u %u\n", red[0], red[1]);
+	// printf("Green: %u %u\n", green[0], green[1]);
+	// printf("Blue: %u %u\n", blue[0], blue[1]);
+	// printf("Clear: %u %u\n", clear[0], clear[1]);
 
-	// Getting low and high bits of green
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, G_DATA_L, &green_l, 1));
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, G_DATA_H, &green_h, 1));
-
-	// Getting low and high bits of blue
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, &blue_l, 1));
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_H, &blue_h, 1));
-
-	// Getting low and high bits of clear
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, &clear_l, 1));
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_H, &clear_h, 1));
-
-	vTaskDelay(10);
+	vTaskDelay(154);
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
-	rgbc_values->red = _convert_from_uint8_to_uint16(red_l, red_h);
-	rgbc_values->green = _convert_from_uint8_to_uint16(green_l, green_h);
-	rgbc_values->blue = _convert_from_uint8_to_uint16(blue_l, blue_h);
-	rgbc_values->clear = _convert_from_uint8_to_uint16(clear_l, clear_h);
+	rgbc_values->red = _convert_from_uint8_to_uint16(red[0], red[1]);
+	rgbc_values->green = _convert_from_uint8_to_uint16(green[0], green[1]);
+	rgbc_values->blue = _convert_from_uint8_to_uint16(blue[0], blue[1]);
+	rgbc_values->clear = _convert_from_uint8_to_uint16(clear[0], clear[1]);
+
+	// printf("Red 16: %u, Green 16: %u, Blue 16: %u, Clear 16: %u\n", rgbc_values->red, rgbc_values->green, rgbc_values->blue, rgbc_values->clear);
 
 	return ESP_OK;
 }

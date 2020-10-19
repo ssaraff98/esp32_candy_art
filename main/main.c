@@ -1,20 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "esp_err.h"
 #include "include/color_sensor.h"
 #include "sdkconfig.h"
 
+#define IMAGE_WIDTH   8
+#define IMAGE_HEIGHT  8
+#define THRESHOLD	  20
+
+/*********************************************
+ * Getting and reading pixel art image file
+ *********************************************/
+void get_colors_from_pixel_file(char** pixel_info) {
+	char data[IMAGE_HEIGHT][IMAGE_WIDTH] = {
+		{'R', 'Y', 'O', 'R', 'O', 'Y', 'R', 'Y'}, 
+		{'Y', 'O', 'Y', 'G', 'P', 'G', 'O', 'G'}, 
+		{'O', 'R', 'O', 'Y', 'R', 'Y', 'P', 'Y'}, 
+		{'Y', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
+		{'O', 'Y', 'R', 'Y', 'P', 'Y', 'P', 'Y'}, 
+		{'P', 'G', 'O', 'G', 'R', 'O', 'G', 'R'}, 
+		{'R', 'Y', 'P', 'Y', 'P', 'Y', 'P', 'G'},
+		{'O', 'G', 'R', 'O', 'G', 'R', 'G', 'O'}
+	};
+
+	for (int i = 0; i < IMAGE_HEIGHT; i++) {
+		for (int j = 0; j < IMAGE_WIDTH; j++) {
+			pixel_info[i][j] = data[i][j];
+		}
+	}
+}
+
 /************************************
  * 
  ************************************/
-void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values) {
+void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char** pixel_info) {
 	// Normalizing RGBC colors to 0-255
 	uint32_t max = rgbc_values->clear;
-	// float max = (float)rgbc_values->red;
-	// if(rgbc_values->red < rgbc_values->blue && rgbc_values->green < rgbc_values->blue)
-	// 	max = (float)rgbc_values->blue;
-	// else if(rgbc_values->red < rgbc_values->green && rgbc_values->blue < rgbc_values->green)
-	// 	max = (float)rgbc_values->green;
 
 	if (rgbc_values->clear == 0) {
+		printf("Black\n");
 		return;
 	}
 
@@ -22,22 +47,72 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values) {
 	float green = (float)rgbc_values->green / max * 255.0;
 	float blue = (float)rgbc_values->blue / max * 255.0;
 
-	// u_char red = rgbc_values->red >> 8;
-	// u_char green = rgbc_values->green >> 8;
-	// u_char blue = rgbc_values->blue >> 8;
+	char color = NULL;
 
-	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+	// Matching color detected
+	if (green == 0 && blue == 0) {
+		if (red == 255) {
+			printf("Purple\n");
+			color = 'P';
+		}
+		else if (red == 170) {
+			printf("Red\n");
+			color = 'R';
+		}
+	}
+	else if (blue == 0 && red > 0 && green > 0) {
+		printf("Green\n");
+		color = 'G';
+	}
+	else if (green == 51 && blue == 51) {
+		printf("Orange\n");
+		color = 'O';
+	}
+	else if (green == 42.5 && blue == 42.5) {
+		printf("Yellow\n");
+		color = 'Y';
+	}
+	else {
+		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+	}
+
+	int row, column;
+
+	for (int i = IMAGE_HEIGHT - 1; i >= 0; i--) {
+		for (int j = 0; j < IMAGE_WIDTH; j++) {
+			printf(pixel_info[i][j]);
+			if (color == pixel_info[i][j]) {
+				row = i;
+				column = j;
+				pixel_info[i][j] = 'X';
+				break;
+			}
+		}
+	}
+
+	printf("Row: %d, Column: %d\n", row, column);
 }
 
 /***************************************
  * Testing color sensor functionality
  ***************************************/
 void tcs34725_task(void *ignore) {
+	char** pixel_info = (char**)malloc(IMAGE_HEIGHT * sizeof(char *));
+	for (int i = 0; i < IMAGE_HEIGHT; i++) {
+		pixel_info[i] = (char*)malloc(IMAGE_WIDTH * sizeof(char));
+	}
+
+	for (int i = 0; i < IMAGE_HEIGHT; i++) {
+		for (int j = 0; j < IMAGE_WIDTH; j++) {
+			printf(pixel_info[i][j]);
+		}
+	}
+
 	i2c_master_init(I2C_PORT_NUM);
 
 	tcs34725_t sensor;
 	tcs34725_integration_time_t integration_time = integration_time_2_4ms;
-	tcs34725_gain_t gain = gain_4x;
+	tcs34725_gain_t gain = gain_1x;
 	esp_err_t ret = i2c_tcs34725_init(I2C_PORT_NUM, &sensor, integration_time, gain);
 	if (ret != ESP_OK) {
 		printf("Initialization error");
@@ -50,26 +125,30 @@ void tcs34725_task(void *ignore) {
 		rgbc_values.green = NULL;
 		rgbc_values.blue = NULL;
 		rgbc_values.clear = NULL;
-
-		//i2c_tcs34725_set_interrupt(I2C_PORT_NUM, false);		// Turning LED on
-		vTaskDelay(60);
+		
+		//vTaskDelay(60);
 
 		ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
 		if (ret != ESP_OK) {
 			printf("Get RGB data error");
 			return;
 		}
-
-		//i2c_tcs34725_set_interrupt(I2C_PORT_NUM, true);		// Turning LED off
 		
-		check_rgb_color(&rgbc_values);
+		check_rgb_color(&rgbc_values, pixel_info);
 
-		//vTaskDelay(60);
+		vTaskDelay(100);
 	}
 
+	for (int i = 0; i < IMAGE_HEIGHT; i++) {
+		free(pixel_info[i]);
+	}
+	free(pixel_info);
 	vTaskDelete(NULL);
 }
 
+/************************************
+ * Testing complete functionality
+ ************************************/
 void app_main() {
 	xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
 }
