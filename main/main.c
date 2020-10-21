@@ -51,23 +51,24 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 		color = 'Y';
 	}
 	else {
-		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
 
-	int row, column;
-	int flag = 0;
+	int row;
+	int column;
 
 	for (int i = IMAGE_HEIGHT - 1; i >= 0; i--) {
+		row = -1;
+		column = -1;
+
 		for (int j = 0; j < IMAGE_WIDTH; j++) {
 			if (color == pixel_info[i][j]) {
 				row = i;
 				column = j;
 				pixel_info[i][j] = 'X';
-				flag = 1;
-				break;
 			}
 		}
-		if (flag == 1) {
+		if (row != -1 && column != -1) {
 			break;
 		}
 	}
