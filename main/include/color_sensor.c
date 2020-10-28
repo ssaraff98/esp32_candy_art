@@ -67,7 +67,7 @@ esp_err_t _tcs34725_enable(i2c_port_t i2c_num) {
 	vTaskDelay(3);
 
 	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, PON_ENABLE | AEN_ENABLE, 1));
-	vTaskDelay(154);
+	vTaskDelay(10);
 
 	return ESP_OK;
 }
@@ -174,7 +174,7 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	// printf("Blue: %u %u\n", blue[0], blue[1]);
 	// printf("Clear: %u %u\n", clear[0], clear[1]);
 
-	vTaskDelay(154);
+	vTaskDelay(10);
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
 	rgbc_values->red = _convert_from_uint8_to_uint16(red[0], red[1]);
@@ -203,4 +203,71 @@ esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag) {
 
 	ESP_ERROR_CHECK(_i2c_master_write_slave_register(i2c_num, ENABLE_ADDRESS, value, 1));
 	return ESP_OK;
+}
+
+/**********************************************************************
+ * Normalizing RGBC values to 0-255 and checking against pixel data
+ **********************************************************************/
+void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH]) {
+	// Normalizing RGBC colors to 0-255
+	uint32_t max = rgbc_values->clear;
+
+	if (rgbc_values->clear == 0) {
+		printf("Black\n");
+		return;
+	}
+
+	float red = (float)rgbc_values->red / max * 255.0;
+	float green = (float)rgbc_values->green / max * 255.0;
+	float blue = (float)rgbc_values->blue / max * 255.0;
+
+	char color = '\0';
+
+	// Matching color detected
+	if (green == 0 && blue == 0) {
+		if (red == 255) {
+			printf("Purple\n");
+			color = 'P';
+		}
+		else if (red == 170) {
+			printf("Red\n");
+			color = 'R';
+		}
+	}
+	else if (blue == 0 && red > 0 && green > 0) {
+		printf("Green\n");
+		color = 'G';
+	}
+	else if (green == 51 && blue == 51) {
+		printf("Orange\n");
+		color = 'O';
+	}
+	else if (green == 42.5 && blue == 42.5) {
+		printf("Yellow\n");
+		color = 'Y';
+	}
+	else {
+		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+	}
+
+	int row;
+	int column;
+
+	for (int i = IMAGE_HEIGHT - 1; i >= 0; i--) {
+		row = -1;
+		column = -1;
+
+		for (int j = 0; j < IMAGE_WIDTH; j++) {
+			if (color == pixel_info[i][j]) {
+				row = i;
+				column = j;
+				pixel_info[i][j] = 'X';
+			}
+		}
+		if (row != -1 && column != -1) {
+			break;
+		}
+	}
+
+	printf("Row: %d, Column: %d\n", row, column);
 }

@@ -24,7 +24,6 @@
 /************************
 * MACROS
 *************************/
-
 // I2C Variables
 #define I2C_TIMEOUT_MS          1000
 #define I2C_PORT_NUM            I2C_NUM_1       // Using I2C hardware port 1 on ESP32
@@ -75,12 +74,9 @@
 #define COMMAND_BIT             0x80            // Command bit specifies register address
 #define RESET_REGISTERS         0x00            // Reset value for all registers except ATIME and WTIME
 
-// Skittle Color Variables
-// #define RED[]                   {170,  0,  0};
-// #define ORANGE[]                {204, 51, 51};
-// #define YELLOW[]                {127, 42, 42};
-// #define GREEN[]                 { 85, 85,  0};
-// #define PURPLE[]                {255,  0,  0};
+// Pixel Image Data Variables
+#define IMAGE_WIDTH   8
+#define IMAGE_HEIGHT  8
 
 /************************
 * STRUCTS
@@ -126,5 +122,6 @@ esp_err_t i2c_master_init(i2c_port_t i2c_num);
 esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_integration_time_t integration_time, tcs34725_gain_t gain);
 esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_rgbc_data_t *rgbc_values);
 esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag);
+void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH]);
 
 #endif
