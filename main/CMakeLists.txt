@@ -1,5 +1,6 @@
 set(srcs "main.c"
 		 "include/color_sensor.c"
+		 "include/servo_motor.c"
 		 "include/stepper_motor.c"
 		 )
 

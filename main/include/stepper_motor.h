@@ -1,6 +1,7 @@
 /*************************************************************************************************
  * Programmer:      Shristi Saraff
  * Motor Driver:    DRV8825
+ * Motor:           17HS4401
  * Datasheet:       https://www.ti.com/lit/ds/symlink/drv8825.pdf
  *************************************************************************************************/
 
@@ -27,14 +28,13 @@
 // GPIO Variables
 #define DIR_PIN                 18                              // PWM direction pin on ESP32 NodeMCU
 #define STEP_PIN                19                              // PWM step pin on ESP32 NodeMCU
-#define MASK_PIN ((1ULL << DIR_PIN) | (1ULL << STEP_PIN))       // Bit mask of pins to set
 
 #define HIGH                    1
 #define LOW                     0
 
 // DRV8825 Variables
 #define MAX_FREQUENCY           250000                          // Maximum frequency in Hz of DRV8825
-#define FREQUENCY               167000                          // 
+// #define FREQUENCY               167000                       
 
 #define MAX_STEPS               4320
 
@@ -51,13 +51,13 @@ typedef enum stepper_motor_output_pins {
 typedef struct drv8825 {
     bool initialized;
     int direction;
-    int steps;
+    int num_steps;
 } drv8825_t;
 
 /************************
 * FUNCTION DEFINITIONS
 *************************/
 esp_err_t drv8825_gpio_init();
-esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int steps);
+esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int num_steps);
 
 #endif

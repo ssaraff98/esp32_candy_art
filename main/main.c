@@ -3,6 +3,7 @@
 #include <string.h>
 #include "esp_err.h"
 #include "include/color_sensor.h"
+#include "include/servo_motor.h"
 #include "include/stepper_motor.h"
 #include "sdkconfig.h"
 
@@ -83,10 +84,40 @@ void drv8825_task(void *ignore) {
 	}
 }
 
+/***************************************
+ * Testing servo motor functionality
+ ***************************************/
+void sg90_task(void *ignore) {
+	esp_err_t ret = sg90_ledc_timer_init();
+	if (ret != ESP_OK) {
+		printf("SG90 LEDC timer initialization error");
+		return;
+	}
+
+	ret = sg90_ledc_channel_init();
+	if (ret != ESP_OK) {
+		printf("SG90 LEDC channel initialization error");
+		return;
+	}
+
+	while (1) {
+		for(int i = MIN_ANGLE; i < MAX_ANGLE; i++) {
+			sg90_calculate_duty(i);
+			vTaskDelay(PULSE_CYCLE / 1000);
+		}
+
+		for(int i = MAX_ANGLE; i > MIN_ANGLE; i--) {
+			sg90_calculate_duty(i);
+			vTaskDelay(PULSE_CYCLE / 1000);
+		}
+	}
+}
+
 /************************************
  * Testing complete functionality
  ************************************/
 void app_main() {
 	xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
 	xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
+	xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
 }
