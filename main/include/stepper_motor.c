@@ -32,18 +32,24 @@ esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int num_steps) {
 	// Setting slave direction
     stepper_motor->direction = direction;
 
-    // Setting slave steps
+    // Setting slave steps per revolution
     stepper_motor->num_steps = num_steps;
 
-    int count = 0;
+    return ESP_OK;
+}
 
-    while (count != num_steps) {
-        printf("Count: %d\n", count++);
-        ESP_ERROR_CHECK(gpio_set_level(DIR_PIN, count % 2));
-        ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, count % 2));
-        vTaskDelay(100);
+void drv8825_rotate(drv8825_t *stepper_motor) {
+    // Set rotation direction
+    ESP_ERROR_CHECK(gpio_set_level(DIR_PIN, stepper_motor->direction));
+
+    for (int i = 0; i < stepper_motor->num_steps; i++) {
+        printf("Step number: %d\n", i);
+        
+        ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
+        vTaskDelay(1000);                                   // May have to change this
+        ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
+        vTaskDelay(1000);                                   // May have to change this
     }
 
-    return ESP_OK;
-
+    vTaskDelay(10000);                                      // May have to change this
 }

@@ -75,13 +75,15 @@ void drv8825_task(void *ignore) {
 
 	drv8825_t stepper_motor;
 	int direction = HIGH;
-	int steps = HIGH;
+	int steps = STEPS_PER_REV;
 
 	ret = drv8825_init(&stepper_motor, direction, steps);
 	if (ret != ESP_OK) {
 		printf("DRV8825 initialization error");
 		return;
 	}
+
+	drv8825_rotate(&stepper_motor);
 }
 
 /***************************************

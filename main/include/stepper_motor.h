@@ -29,14 +29,13 @@
 #define DIR_PIN                 18                              // PWM direction pin on ESP32 NodeMCU
 #define STEP_PIN                19                              // PWM step pin on ESP32 NodeMCU
 
-#define HIGH                    1
-#define LOW                     0
+#define HIGH                    1                               // Rotation in clockwise direction
+#define LOW                     0                               // Rotation in counter clockwise direction
 
 // DRV8825 Variables
-#define MAX_FREQUENCY           250000                          // Maximum frequency in Hz of DRV8825
-// #define FREQUENCY               167000                       
-
+#define MAX_FREQUENCY           250000                          // Maximum frequency in Hz of DRV8825                   
 #define MAX_STEPS               4320
+#define STEPS_PER_REV           200
 
 /************************
 * STRUCTS
@@ -59,5 +58,6 @@ typedef struct drv8825 {
 *************************/
 esp_err_t drv8825_gpio_init();
 esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int num_steps);
+void drv8825_rotate(drv8825_t *stepper_motor);
 
 #endif
