@@ -262,7 +262,7 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 	}
 
 	printf("Raw R: %u, Raw G: %u, Raw B: %u\n", rgbc_values->red, rgbc_values->green, rgbc_values->blue);
-	printf("Red: %f, Green: %f, Blue: %f\n\n", red, green, blue);
+	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
 	int row;
 	int column;
@@ -284,4 +284,6 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 			break;
 		}
 	}
+
+	printf("\n");
 }
