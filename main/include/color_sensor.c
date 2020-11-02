@@ -224,31 +224,45 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 	char color = '\0';
 
 	// Matching color detected
-	if (green == 0 && blue == 0) {
-		if (red == 255) {
-			printf("Purple\n");
-			color = 'P';
-		}
-		else if (red == 170) {
-			printf("Red\n");
-			color = 'R';
-		}
+	// if (green == 0 && blue == 0) {
+	// 	if (red == 255) {
+	// 		printf("Purple\n");
+	// 		color = 'P';
+	// 	}
+	// 	else if (red == 170) {
+	// 		printf("Red\n");
+	// 		color = 'R';
+	// 	}
+	// }
+	// else if (blue == 0 && red > 0 && green > 0) {
+	if ((red >= 210 - THRESHOLD && red <= 210 + THRESHOLD) && (green >= 42 - THRESHOLD && green <= 42 + THRESHOLD) && (blue >= 42 - THRESHOLD && blue <= 42 + THRESHOLD)) {
+		printf("Red\n");
+		color = 'R';
 	}
-	else if (blue == 0 && red > 0 && green > 0) {
+	else if ((red >= 160 - THRESHOLD && red <= 160 + THRESHOLD) && (green >= 69 - THRESHOLD && green <= 69 + THRESHOLD) && (blue >= 51 - THRESHOLD && blue <= 51 + THRESHOLD)) {
+		printf("Purple\n");
+		color = 'P';
+	}
+	else if ((red >= 140 - THRESHOLD && red <= 140 + THRESHOLD) && (green >= 90 - THRESHOLD && green <= 90 + THRESHOLD) && (blue >= 45 - THRESHOLD && blue <= 45 + THRESHOLD)) {
 		printf("Green\n");
 		color = 'G';
 	}
-	else if (green == 51 && blue == 51) {
+	// else if (green == 51 && blue == 51) {
+	else if ((red >= 210 - THRESHOLD && red <= 210 + THRESHOLD) && (green >= 25 - THRESHOLD && green <= 25 + THRESHOLD) && (blue >= 15 - THRESHOLD && blue <= 15 + THRESHOLD)) {
 		printf("Orange\n");
 		color = 'O';
 	}
-	else if (green == 42.5 && blue == 42.5) {
+	// else if (green == 42.5 && blue == 42.5) {
+	else if ((red >= 145 - THRESHOLD && red <= 145 + THRESHOLD) && (green >= 75 - THRESHOLD && green <= 75 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
 		printf("Yellow\n");
 		color = 'Y';
 	}
 	else {
 		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
+
+	printf("Raw R: %u, Raw G: %u, Raw B: %u\n", rgbc_values->red, rgbc_values->green, rgbc_values->blue);
+	printf("Red: %f, Green: %f, Blue: %f\n\n", red, green, blue);
 
 	int row;
 	int column;
@@ -264,10 +278,10 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 				pixel_info[i][j] = 'X';
 			}
 		}
-		if (row != -1 && column != -1) {
+		
+		if ((row >= 0 && row <= IMAGE_WIDTH) && (column >= 0 && column <= IMAGE_HEIGHT)) {
+			printf("Row: %d, Column: %d\n", row, column);
 			break;
 		}
 	}
-
-	printf("Row: %d, Column: %d\n", row, column);
 }

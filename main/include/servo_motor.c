@@ -66,6 +66,9 @@ void sg90_calculate_duty(double angle) {
     double duty_us = _calculate_duty_percentage(duty * 100.0 * FREQUENCY / 1000000);
 
     ledc_set_duty(SPEED_MODE, CHANNEL, duty_us);
+
+    vTaskDelay(100);
+
     ledc_update_duty(SPEED_MODE, CHANNEL);
 
     printf("Duty %lf microseconds for angle %lf\n", duty_us, angle);

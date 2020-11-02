@@ -75,8 +75,9 @@
 #define RESET_REGISTERS         0x00            // Reset value for all registers except ATIME and WTIME
 
 // Pixel Image Data Variables
-#define IMAGE_WIDTH   8
-#define IMAGE_HEIGHT  8
+#define IMAGE_WIDTH             8
+#define IMAGE_HEIGHT            8
+#define THRESHOLD               10
 
 /************************
 * STRUCTS

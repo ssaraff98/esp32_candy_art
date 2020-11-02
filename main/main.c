@@ -101,12 +101,12 @@ void sg90_task(void *ignore) {
 	}
 
 	while (1) {
-		for(int i = MIN_ANGLE; i < MAX_ANGLE; i++) {
+		for(int i = MIN_ANGLE; i < MAX_ANGLE; i+=60) {
 			sg90_calculate_duty(i);
 			vTaskDelay(PULSE_CYCLE / 1000);
 		}
 
-		for(int i = MAX_ANGLE; i > MIN_ANGLE; i--) {
+		for(int i = MAX_ANGLE; i > MIN_ANGLE; i-=60) {
 			sg90_calculate_duty(i);
 			vTaskDelay(PULSE_CYCLE / 1000);
 		}
