@@ -28,7 +28,7 @@
 #define TIMER                   LEDC_TIMER_0            // 
 #define CHANNEL                 LEDC_CHANNEL_0          // 
 #define SPEED_MODE              LEDC_HIGH_SPEED_MODE    // 
-#define BITS                    LEDC_TIMER_15_BIT       // 
+#define BITS                    LEDC_TIMER_16_BIT       // 
 
 #define MIN_ANGLE               0                       // Minimum servo angle in degrees
 #define MAX_ANGLE               180                     // Maximum servo angle in degrees
@@ -48,5 +48,6 @@ double _calculate_duty_percentage(double percent_duty);
 esp_err_t sg90_ledc_timer_init();
 esp_err_t sg90_ledc_channel_init();
 void sg90_calculate_duty(double angle);
+void sg90_stop();
 
 #endif

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "esp_err.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include "include/color_sensor.h"
 #include "include/servo_motor.h"
 #include "include/stepper_motor.h"
@@ -101,6 +103,8 @@ void sg90_task(void *ignore) {
 		printf("SG90 LEDC channel initialization error");
 		return;
 	}
+
+	vTaskDelay(1);
 
 	while (1) {
 		for(double i = MIN_ANGLE; i < MAX_ANGLE; i+=22.5) {

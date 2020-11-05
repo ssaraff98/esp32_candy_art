@@ -32,7 +32,7 @@ esp_err_t sg90_ledc_timer_init() {
     ledc_timer_config_t timer_conf;
 
     // Configuration parameters of LEDC timer pins
-	timer_conf.bit_num = BITS;
+	timer_conf.duty_resolution = BITS;
     timer_conf.clk_cfg = LEDC_AUTO_CLK;
     timer_conf.freq_hz = FREQUENCY;
     timer_conf.speed_mode = SPEED_MODE;
@@ -49,7 +49,7 @@ esp_err_t sg90_ledc_channel_init() {
 
     // Configuration parameters of LEDC channel pins
     ledc_conf.gpio_num = SERVO_PIN;
-    ledc_conf.duty = PULSE_CYCLE;                             // May not need this depending on starting position = 0
+    ledc_conf.duty = 0;                             // May not need this depending on starting position = 0
     ledc_conf.intr_type = LEDC_INTR_DISABLE;
     ledc_conf.speed_mode = SPEED_MODE;
 	ledc_conf.channel = CHANNEL;
@@ -70,4 +70,11 @@ void sg90_calculate_duty(double angle) {
 
     printf("Duty %lf and pulsewidth %lf microseconds for angle %lf\n", duty_us, pulse_width, angle);
     vTaskDelay(pulse_width / (PULSE_CYCLE / 4096));
+}
+
+/*****************************
+ * Stop rotation of SG90
+ *****************************/
+void sg90_stop() {
+    ledc_stop(SPEED_MODE, CHANNEL, 0);
 }
