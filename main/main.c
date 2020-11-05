@@ -103,14 +103,14 @@ void sg90_task(void *ignore) {
 	}
 
 	while (1) {
-		for(int i = MIN_ANGLE; i < MAX_ANGLE; i+=60) {
+		for(double i = MIN_ANGLE; i < MAX_ANGLE; i+=22.5) {
 			sg90_calculate_duty(i);
-			vTaskDelay(PULSE_CYCLE / 1000);
+			// vTaskDelay(PULSE_CYCLE / 1000);
 		}
 
-		for(int i = MAX_ANGLE; i > MIN_ANGLE; i-=60) {
+		for(double i = MAX_ANGLE; i > MIN_ANGLE; i-=22.5) {
 			sg90_calculate_duty(i);
-			vTaskDelay(PULSE_CYCLE / 1000);
+			// vTaskDelay(PULSE_CYCLE / 1000);
 		}
 	}
 }
@@ -119,7 +119,7 @@ void sg90_task(void *ignore) {
  * Testing complete functionality
  ************************************/
 void app_main() {
-	xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
-	xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
+	// xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
+	// xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
 	xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
 }

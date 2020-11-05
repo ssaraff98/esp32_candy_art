@@ -37,8 +37,7 @@
 #define MAX_PULSEWIDTH          2400                    // Maximum pulse width in microseconds for SG90
 
 #define FREQUENCY               50                      // Frequency in Hz
-#define PULSE_CYCLE             20                      // Pulse cycle of SG90 in milliseconds
-#define OPERATING_SPEED         120                     // Operating speed of SG90 in milliseconds
+#define PULSE_CYCLE             20000                   // Pulse cycle of SG90 in microseconds
 
 #define DIRECTION               1                       // Direction of 1 = up, Direction of -1 = down
 
