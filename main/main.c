@@ -134,6 +134,6 @@ void sg90_task(void *ignore) {
  ************************************/
 void app_main() {
 	// xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
-	// xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
-	xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
+	xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
+	// xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
 }

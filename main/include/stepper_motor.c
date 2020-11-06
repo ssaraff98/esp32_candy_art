@@ -46,10 +46,9 @@ void drv8825_rotate(drv8825_t *stepper_motor) {
         printf("Step number: %d\n", i);
         
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
-        vTaskDelay(1000);                                   // May have to change this
+        vTaskDelay(10);                                     // May have to change this
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
-        vTaskDelay(1000);                                   // May have to change this
+        vTaskDelay(10);                                     // May have to change this
     }
-
-    vTaskDelay(10000);                                      // May have to change this
+    vTaskDelay(1000);                                       // May have to change this
 }
