@@ -19,6 +19,7 @@ double _calculate_duty_percentage(double percent_duty) {
     if (percent_duty > 100) {
         percent_duty = 100;
     }
+
     double duty = (percent_duty / 100.0) * ((2 << (BITS - 1)) - 1);
     return duty;
 }
@@ -49,7 +50,7 @@ esp_err_t sg90_ledc_channel_init() {
 
     // Configuration parameters of LEDC channel pins
     ledc_conf.gpio_num = SERVO_PIN;
-    ledc_conf.duty = 0;                             // May not need this depending on starting position = 0
+    ledc_conf.duty = 0;                             // May not need this depending on starting position
     ledc_conf.intr_type = LEDC_INTR_DISABLE;
     ledc_conf.speed_mode = SPEED_MODE;
 	ledc_conf.channel = CHANNEL;
@@ -69,7 +70,7 @@ void sg90_calculate_duty(double angle) {
     ledc_update_duty(SPEED_MODE, CHANNEL);
 
     printf("Duty %lf and pulsewidth %lf microseconds for angle %lf\n", duty_us, pulse_width, angle);
-    vTaskDelay(pulse_width / (PULSE_CYCLE / 4096));
+    //vTaskDelay(pulse_width / (PULSE_CYCLE / 4096));
 }
 
 /*****************************
