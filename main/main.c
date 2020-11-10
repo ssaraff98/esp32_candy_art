@@ -42,27 +42,34 @@ void tcs34725_task(void *ignore) {
 		{'O', 'G', 'R', 'O', 'G', 'R', 'G', 'O'}
 	};
 
-	while (1) {
+	int count = 0;
+	while (count < 64) {
 		tcs34725_rgbc_data_t rgbc_values;
 		rgbc_values.red = NULL;
 		rgbc_values.green = NULL;
 		rgbc_values.blue = NULL;
 		rgbc_values.clear = NULL;
-
-		//vTaskDelay(60);
+		int column = -1;
 
 		ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
 		if (ret != ESP_OK) {
 			printf("Get RGB data error");
 			return;
 		}
-		
-		check_rgb_color(&rgbc_values, pixel_info);
 
+		printf("\n");
+		
+		column = check_rgb_color(&rgbc_values, pixel_info);
+		if (column < 0 || column >= IMAGE_HEIGHT) {
+			printf("Reject tube\n");
+		}
+		else {
+			printf("Column: %d\n", column);
+			count++;
+		}
+		printf("Count: %d\n", count);
 		vTaskDelay(100);
 	}
-
-	vTaskDelete(NULL);
 }
 
 /***************************************
@@ -122,11 +129,86 @@ void sg90_task(void *ignore) {
 	}
 }
 
+/***************************************
+ * Testing integrated functionality
+ ***************************************/
+void test_task() {
+	char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH] = {
+		{'R', 'Y', 'O', 'R', 'O', 'Y', 'R', 'Y'}, 
+		{'Y', 'O', 'Y', 'G', 'P', 'G', 'O', 'G'}, 
+		{'O', 'R', 'O', 'Y', 'R', 'Y', 'P', 'Y'}, 
+		{'Y', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
+		{'O', 'Y', 'R', 'Y', 'P', 'Y', 'P', 'Y'}, 
+		{'P', 'G', 'O', 'G', 'R', 'O', 'G', 'R'}, 
+		{'R', 'Y', 'P', 'Y', 'P', 'Y', 'P', 'G'},
+		{'O', 'G', 'R', 'O', 'G', 'R', 'G', 'O'}
+	};
+
+	double pulsewidth[9] = {C0, C1, C2, C3, C4, C5, C6, C7, C8};
+
+	esp_err_t ret = i2c_master_init(I2C_PORT_NUM);
+	if (ret != ESP_OK) {
+		printf("I2C master initialization error");
+		return;
+	}
+
+	tcs34725_t sensor;
+	tcs34725_integration_time_t integration_time = integration_time_2_4ms;
+	tcs34725_gain_t gain = gain_1x;
+	ret = i2c_tcs34725_init(I2C_PORT_NUM, &sensor, integration_time, gain);
+	if (ret != ESP_OK) {
+		printf("TCS34725 initialization error");
+		return;
+	}
+
+	ret = sg90_ledc_timer_init();
+	if (ret != ESP_OK) {
+		printf("SG90 LEDC timer initialization error");
+		return;
+	}
+
+	ret = sg90_ledc_channel_init();
+	if (ret != ESP_OK) {
+		printf("SG90 LEDC channel initialization error");
+		return;
+	}
+
+	sg90_position0();
+
+	int count = 0;
+	while (count < (IMAGE_HEIGHT * IMAGE_WIDTH)) {
+		tcs34725_rgbc_data_t rgbc_values;
+		rgbc_values.red = NULL;
+		rgbc_values.green = NULL;
+		rgbc_values.blue = NULL;
+		rgbc_values.clear = NULL;
+		int column = -1;
+
+		ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
+		if (ret != ESP_OK) {
+			printf("Get RGB data error");
+			return;
+		}
+		vTaskDelay(100);			// Change according to time taken by skittle to be dropped
+		
+		column = check_rgb_color(&rgbc_values, pixel_info);
+		if (column < 0 || column >= IMAGE_HEIGHT) {
+			sg90_calculate_duty(C8);
+		}
+		else {
+			sg90_calculate_duty(pulsewidth[column]);
+			count++;
+		}
+		vTaskDelay(100);
+	}
+}
+
 /************************************
  * Testing complete functionality
  ************************************/
 void app_main() {
 	// xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
 	// xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
-	xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
+	// xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
+	xTaskCreate(&test_task, "test_task", 2048, NULL, 5, NULL);
 }

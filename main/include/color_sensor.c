@@ -208,13 +208,13 @@ esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag) {
 /**********************************************************************
  * Normalizing RGBC values to 0-255 and checking against pixel data
  **********************************************************************/
-void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH]) {
+int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH]) {
 	// Normalizing RGBC colors to 0-255
 	uint32_t max = rgbc_values->clear;
 
 	if (rgbc_values->clear == 0) {
 		printf("Black\n");
-		return;
+		return -1;
 	}
 
 	float red = (float)rgbc_values->red / max * 255.0;
@@ -224,31 +224,20 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 	char color = '\0';
 
 	// Matching color detected
-	// if (green == 0 && blue == 0) {
-	// 	if (red == 255) {
-	// 		printf("Purple\n");
-	// 		color = 'P';
-	// 	}
-	// 	else if (red == 170) {
-	// 		printf("Red\n");
-	// 		color = 'R';
-	// 	}
-	// }
-	// else if (blue == 0 && red > 0 && green > 0) {
-	if ((red >= 210 - THRESHOLD && red <= 210 + THRESHOLD) && (green >= 42 - THRESHOLD && green <= 42 + THRESHOLD) && (blue >= 42 - THRESHOLD && blue <= 42 + THRESHOLD)) {
+	if ((red >= 200 - THRESHOLD && red <= 200 + THRESHOLD) && (green >= 22 - THRESHOLD && green <= 22 + THRESHOLD) && (blue >= 42 - THRESHOLD && blue <= 42 + THRESHOLD)) {
 		printf("Red\n");
 		color = 'R';
 	}
-	else if ((red >= 160 - THRESHOLD && red <= 160 + THRESHOLD) && (green >= 69 - THRESHOLD && green <= 69 + THRESHOLD) && (blue >= 51 - THRESHOLD && blue <= 51 + THRESHOLD)) {
+	else if ((red >= 160 - THRESHOLD && red <= 160 + THRESHOLD) && (green >= 60 - THRESHOLD && green <= 60 + THRESHOLD) && (blue >= 51 - THRESHOLD && blue <= 51 + THRESHOLD)) {
 		printf("Purple\n");
 		color = 'P';
 	}
-	else if ((red >= 140 - THRESHOLD && red <= 140 + THRESHOLD) && (green >= 90 - THRESHOLD && green <= 90 + THRESHOLD) && (blue >= 45 - THRESHOLD && blue <= 45 + THRESHOLD)) {
+	else if ((red >= 100 - THRESHOLD && red <= 100 + THRESHOLD) && (green >= 110 - THRESHOLD && green <= 110 + THRESHOLD) && (blue >= 45 - THRESHOLD && blue <= 45 + THRESHOLD)) {
 		printf("Green\n");
 		color = 'G';
 	}
 	// else if (green == 51 && blue == 51) {
-	else if ((red >= 210 - THRESHOLD && red <= 210 + THRESHOLD) && (green >= 25 - THRESHOLD && green <= 25 + THRESHOLD) && (blue >= 15 - THRESHOLD && blue <= 15 + THRESHOLD)) {
+	else if ((red >= 185 - THRESHOLD && red <= 185 + THRESHOLD) && (green >= 43 - THRESHOLD && green <= 43 + THRESHOLD) && (blue >= 15 - THRESHOLD && blue <= 15 + THRESHOLD)) {
 		printf("Orange\n");
 		color = 'O';
 	}
@@ -261,11 +250,10 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
 
-	printf("Raw R: %u, Raw G: %u, Raw B: %u\n", rgbc_values->red, rgbc_values->green, rgbc_values->blue);
 	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
-	int row;
-	int column;
+	int row = -1;
+	int column = -1;
 
 	for (int i = IMAGE_HEIGHT - 1; i >= 0; i--) {
 		row = -1;
@@ -279,11 +267,12 @@ void check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HE
 			}
 		}
 		
-		if ((row >= 0 && row <= IMAGE_WIDTH) && (column >= 0 && column <= IMAGE_HEIGHT)) {
-			printf("Row: %d, Column: %d\n", row, column);
+		printf("Row: %d, Column: %d\n", row, column);
+		if ((row >= 0 && row < IMAGE_WIDTH) && (column >= 0 && column < IMAGE_HEIGHT)) {
+			// printf("Row: %d, Column: %d\n", row, column);
 			break;
 		}
 	}
 
-	printf("\n");
+	return column;
 }
