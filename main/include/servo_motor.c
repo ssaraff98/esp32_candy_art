@@ -50,7 +50,8 @@ esp_err_t sg90_ledc_channel_init() {
 
     // Configuration parameters of LEDC channel pins
     ledc_conf.gpio_num = SERVO_PIN;
-    ledc_conf.duty = 0;                             // May not need this depending on starting position
+    ledc_conf.duty = 0;
+    ledc_conf.hpoint = 0;
     ledc_conf.intr_type = LEDC_INTR_DISABLE;
     ledc_conf.speed_mode = SPEED_MODE;
 	ledc_conf.channel = CHANNEL;
@@ -62,15 +63,15 @@ esp_err_t sg90_ledc_channel_init() {
 /*****************************************************
  * Controlling rotation of SG90 through duty cycle
  *****************************************************/
-void sg90_calculate_duty(double angle) {
-    double pulse_width = (angle * (MAX_PULSEWIDTH - MIN_PULSEWIDTH) / (MAX_ANGLE - MIN_ANGLE)) + MIN_PULSEWIDTH;
-    double duty_us = _calculate_duty_percentage(pulse_width * 100.0 * FREQUENCY / 1000000);
+void sg90_calculate_duty(double pulse_width) {
+    double duty_bits = _calculate_duty_percentage(pulse_width * 100.0 * FREQUENCY / 1000000);
 
-    ledc_set_duty(SPEED_MODE, CHANNEL, duty_us);
+    ledc_set_duty(SPEED_MODE, CHANNEL, duty_bits);
     ledc_update_duty(SPEED_MODE, CHANNEL);
+}
 
-    printf("Duty %lf and pulsewidth %lf microseconds for angle %lf\n", duty_us, pulse_width, angle);
-    //vTaskDelay(pulse_width / (PULSE_CYCLE / 4096));
+void sg90_position0() {
+    sg90_calculate_duty(C0);
 }
 
 /*****************************

@@ -104,28 +104,21 @@ void sg90_task(void *ignore) {
 		return;
 	}
 
-	vTaskDelay(1);
- 
-	while (1) {
-		for(int i = MIN_ANGLE; i < MAX_ANGLE; i++) {
-			sg90_calculate_duty(i);
-			if (i % 22 == 0) {
-				vTaskDelay(100);
-			}
-			else {
-				vTaskDelay(10 / 1000);
-			}
-		}
+	double pulsewidth[9] = {C0, C1, C2, C3, C4, C5, C6, C7, C8};
 
-		for(int i = MAX_ANGLE; i > MIN_ANGLE; i--) {
-			sg90_calculate_duty((double)i);
-			if (i % 22 == 0) {
-				vTaskDelay(100);
-			}
-			else {
-				vTaskDelay(10 / 1000);
-			}
-		}
+	int column_list[IMAGE_HEIGHT * 2] = {
+		0, 3, 8, 1, 1, 4, 5, 7,
+		2, 2, 2, 6, 8, 0, 3, 4
+	};
+
+	vTaskDelay(1);
+	sg90_position0();
+
+	for (int c = 0; c < IMAGE_HEIGHT * 2; c++) {
+		int column = column_list[c];
+		printf("Pulsewidth %lf microseconds for column %d\n", pulsewidth[column], column);
+		sg90_calculate_duty(pulsewidth[column]);
+		vTaskDelay(100);
 	}
 }
 
@@ -134,6 +127,6 @@ void sg90_task(void *ignore) {
  ************************************/
 void app_main() {
 	// xTaskCreate(&tcs34725_task, "tcs34725_task", 2048, NULL, 5, NULL);
-	xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
-	// xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
+	// xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, NULL);
+	xTaskCreate(&sg90_task, "sg90_task", 2048, NULL, 5, NULL);
 }
