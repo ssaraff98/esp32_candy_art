@@ -224,15 +224,15 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 	char color = '\0';
 
 	// Matching color detected
-	if ((red >= 200 - THRESHOLD && red <= 200 + THRESHOLD) && (green >= 22 - THRESHOLD && green <= 22 + THRESHOLD) && (blue >= 42 - THRESHOLD && blue <= 42 + THRESHOLD)) {
+	if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
 		printf("Red\n");
 		color = 'R';
 	}
-	else if ((red >= 160 - THRESHOLD && red <= 160 + THRESHOLD) && (green >= 60 - THRESHOLD && green <= 60 + THRESHOLD) && (blue >= 51 - THRESHOLD && blue <= 51 + THRESHOLD)) {
+	else if ((red >= 127 - THRESHOLD && red <= 127 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
 		printf("Purple\n");
 		color = 'P';
 	}
-	else if ((red >= 100 - THRESHOLD && red <= 100 + THRESHOLD) && (green >= 110 - THRESHOLD && green <= 110 + THRESHOLD) && (blue >= 45 - THRESHOLD && blue <= 45 + THRESHOLD)) {
+	else if ((red >= 100 - THRESHOLD && red <= 100 + THRESHOLD) && (green >= 100 - THRESHOLD && green <= 100 + THRESHOLD) && (blue >= 45 - THRESHOLD && blue <= 45 + THRESHOLD)) {
 		printf("Green\n");
 		color = 'G';
 	}
@@ -242,7 +242,7 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		color = 'O';
 	}
 	// else if (green == 42.5 && blue == 42.5) {
-	else if ((red >= 145 - THRESHOLD && red <= 145 + THRESHOLD) && (green >= 75 - THRESHOLD && green <= 75 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
+	else if ((red >= 153 - THRESHOLD && red <= 153 + THRESHOLD) && (green >= 65 - THRESHOLD && green <= 65 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
 		printf("Yellow\n");
 		color = 'Y';
 	}
@@ -269,7 +269,6 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		
 		printf("Row: %d, Column: %d\n", row, column);
 		if ((row >= 0 && row < IMAGE_WIDTH) && (column >= 0 && column < IMAGE_HEIGHT)) {
-			// printf("Row: %d, Column: %d\n", row, column);
 			break;
 		}
 	}
