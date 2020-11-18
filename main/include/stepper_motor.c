@@ -48,7 +48,12 @@ void drv8825_rotate(drv8825_t *stepper_motor) {
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
         vTaskDelay(10);                                     // May have to change this
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
-        vTaskDelay(10);                                     // May have to change this
+        if (i % DISTANCE_BETWEEN_SPOKES_DELAY == 0) {
+            vTaskDelay(1000);                               // Delay to stop candy right under the color sensor
+        }
+        else {
+            vTaskDelay(10);                                 // Delay between each step of the motor
+        }
     }
-    vTaskDelay(1000);                                       // May have to change this
+    vTaskDelay(10);                                         // Delay between each revolution
 }

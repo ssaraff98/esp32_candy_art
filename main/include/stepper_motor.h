@@ -34,19 +34,15 @@
 
 // DRV8825 Variables
 #define MAX_FREQUENCY           250000                          // Maximum frequency in Hz of DRV8825                   
-#define MAX_STEPS               4320
-#define STEPS_PER_REV           200
+#define MAX_STEPS               4320                            // Maximum number of steps of DRV8825
+#define STEPS_PER_REV           200                             // Number of steps per revolution of DRV8825
+
+// Delay Variables
+#define DISTANCE_BETWEEN_SPOKES_DELAY   40                      // Delay between two spokes of the wheel
 
 /************************
 * STRUCTS
 *************************/
-typedef enum stepper_motor_output_pins {
-    a1 = 5,
-    a2 = 7,
-    b1 = 10,
-    b2 = 8
-} stepper_motor_output_pins_t;
-
 typedef struct drv8825 {
     bool initialized;
     int direction;

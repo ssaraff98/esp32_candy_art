@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Pick an image!</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="style.css">
+        
+    </head>
+    <body>
+        <div class="carousel-container">
+            <a nohref class="previous round" onclick="carousel_prev()">&#8249;</a>
+            <a nohref class="next round" onclick="carousel_next()">&#8250;</a>
+            <div class="carousel-slide">
+                <!--last image needs to be cloned at the start-->
+                <img src="kirby.png" id="lastClone">
+                <img src="person.png">
+                <img src="pikachu.png">
+                <img src="sonic.png">
+                <img src="kirby.png">
+                <img src="person.png" id="firstClone">
+                <!--first image needs to be cloned at the end-->
+            </div>
+        </div>
+        <div>
+            <button onclick="getpickingarray()">Pick this one</button>
+        </div>
+        <!--
+        <button id="prevBtn" onclick="carousel_prev()">Prev</button>
+        <button id="nextBtn" onclick="carousel_next()">Next</button>-->
+        
+        <script src="pickingscript.js" async defer></script>
+        
+    </body>
+</html>
