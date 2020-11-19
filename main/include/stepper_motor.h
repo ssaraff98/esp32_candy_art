@@ -40,6 +40,8 @@
 // Delay Variables
 #define DISTANCE_BETWEEN_SPOKES_DELAY   40                      // Delay between two spokes of the wheel
 
+extern QueueHandle_t queue;
+
 /************************
 * STRUCTS
 *************************/
@@ -55,5 +57,6 @@ typedef struct drv8825 {
 esp_err_t drv8825_gpio_init();
 esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int num_steps);
 void drv8825_rotate(drv8825_t *stepper_motor);
+void drv8825_stop();
 
 #endif

@@ -38,17 +38,24 @@ esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int num_steps) {
     return ESP_OK;
 }
 
+void drv8825_stop() {
+    printf("Stopping stepper motor\n");
+    gpio_reset_pin(DIR_PIN);
+    gpio_reset_pin(STEP_PIN);
+}
+
 void drv8825_rotate(drv8825_t *stepper_motor) {
     // Set rotation direction
     ESP_ERROR_CHECK(gpio_set_level(DIR_PIN, stepper_motor->direction));
 
     for (int i = 0; i < stepper_motor->num_steps; i++) {
-        printf("Step number: %d\n", i);
+        // printf("Step number: %d\n", i);
         
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
         vTaskDelay(10);                                     // May have to change this
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
         if (i % DISTANCE_BETWEEN_SPOKES_DELAY == 0) {
+            // xQueueSend();
             vTaskDelay(1000);                               // Delay to stop candy right under the color sensor
         }
         else {

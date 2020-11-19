@@ -198,6 +198,11 @@ esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag) {
 	return ESP_OK;
 }
 
+void tcs34725_stop() {
+	printf("Stopping color sensor\n");
+	_tcs34725_disable(I2C_PORT_NUM);
+}
+
 /**********************************************************************
  * Normalizing RGBC values to 0-255 and checking against pixel data
  **********************************************************************/
@@ -242,8 +247,6 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 	else {
 		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
-
-	// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
 	int row = -1;
 	int column = -1;
