@@ -71,7 +71,7 @@ void sg90_calculate_duty(double pulse_width) {
 }
 
 void sg90_position0() {
-    sg90_calculate_duty(C0);
+    sg90_calculate_duty(C8);
 }
 
 /*****************************

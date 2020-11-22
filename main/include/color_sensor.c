@@ -226,10 +226,10 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 	char color = '\0';
 
 	// Matching color detected
-	// if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
-	// 	printf("Red\n");
-	// 	color = 'R';
-	// }
+	if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
+		printf("Red\n");
+		color = 'R';
+	}
 	if ((red >= 150 - THRESHOLD && red <= 150 + THRESHOLD) && (green >= 58 - THRESHOLD && green <= 58 + THRESHOLD) && (blue >= 58 - THRESHOLD && blue <= 58 + THRESHOLD)) {
 		printf("Purple\n");
 		color = 'P';
@@ -238,16 +238,14 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		printf("Green\n");
 		color = 'G';
 	}
-	// else if (green == 51 && blue == 51) {
 	else if ((red >= 185 - THRESHOLD && red <= 185 + THRESHOLD) && (green >= 43 - THRESHOLD && green <= 43 + THRESHOLD) && (blue >= 15 - THRESHOLD && blue <= 15 + THRESHOLD)) {
-		printf("Orange\n");
-		color = 'O';
+		printf("Red\n");
+		color = 'R';
 	}
-	// else if (green == 42.5 && blue == 42.5) {
-	// else if ((red >= 153 - THRESHOLD && red <= 153 + THRESHOLD) && (green >= 65 - THRESHOLD && green <= 65 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
-	// 	printf("Yellow\n");
-	// 	color = 'Y';
-	// }
+	else if ((red >= 153 - THRESHOLD && red <= 153 + THRESHOLD) && (green >= 65 - THRESHOLD && green <= 65 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
+		printf("Purple\n");
+		color = 'P';
+	}
 	else {
 		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}

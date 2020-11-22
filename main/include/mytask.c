@@ -159,15 +159,16 @@ void drv8825_task(void *ignore) {
 void test_for_one_revolution_task() {
 	printf("One revolution test task initiated\n");
 	
+	// Test pixel art image
 	char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH] = {
-		{'R', 'Y', 'O', 'R', 'O', 'Y', 'R', 'Y'}, 
-		{'Y', 'O', 'Y', 'G', 'P', 'G', 'O', 'G'}, 
-		{'O', 'R', 'O', 'Y', 'R', 'Y', 'P', 'Y'}, 
-		{'Y', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
-		{'O', 'Y', 'R', 'Y', 'P', 'Y', 'P', 'Y'}, 
-		{'P', 'G', 'O', 'G', 'R', 'O', 'G', 'R'}, 
-		{'R', 'Y', 'P', 'Y', 'P', 'Y', 'P', 'G'},
-		{'O', 'G', 'R', 'O', 'G', 'R', 'G', 'O'}
+		{'R', 'P', 'P', 'R', 'R', 'G', 'R', 'G'}, 
+		{'P', 'R', 'P', 'G', 'P', 'G', 'G', 'G'}, 
+		{'R', 'R', 'R', 'R', 'R', 'P', 'P', 'P'}, 
+		{'P', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
+		{'R', 'P', 'R', 'P', 'P', 'P', 'P', 'P'}, 
+		{'P', 'G', 'R', 'G', 'R', 'R', 'G', 'R'}, 
+		{'R', 'P', 'P', 'P', 'P', 'P', 'P', 'G'},
+		{'R', 'G', 'R', 'R', 'G', 'R', 'G', 'R'}
 	};
 
 	double pulsewidth[9] = {C0, C1, C2, C3, C4, C5, C6, C7, C8};
@@ -198,6 +199,7 @@ void test_for_one_revolution_task() {
 		return;
 	}
 
+	// Setting servo motor to default home position which is the reject tube
 	sg90_position0();
 
 	queue = xQueueCreate(10, sizeof(int));
@@ -212,6 +214,7 @@ void test_for_one_revolution_task() {
 	}
 	EventBits_t bits;
 
+	// Starting stepper motor task
 	xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, &steppertask);
 
 	int count = 0;
@@ -223,9 +226,9 @@ void test_for_one_revolution_task() {
 		rgbc_values.clear = NULL;
 		int column = -1;
 
-		bits = xEventGroupWaitBits(events, SENSE_COLOR, pdTRUE, pdFALSE, 1000 / portTICK_RATE_MS);
+		bits = xEventGroupWaitBits(events, SENSE_COLOR, pdTRUE, pdFALSE, 100 / portTICK_RATE_MS);
 		if (bits == 0) {
-			printf("Failed to receive event bits\n");
+			// printf("Failed to receive event bits\n");
 		}
 		else {
 			esp_err_t ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
@@ -233,14 +236,15 @@ void test_for_one_revolution_task() {
 				printf("Get RGB data error");
 				return;
 			}
-			// vTaskDelay(10);			// Change according to time taken by skittle to be dropped
+			vTaskDelay(3);			// Change according to time taken by skittle to be dropped
 			
 			column = check_rgb_color(&rgbc_values, pixel_info);
 			if (column < 0 || column >= IMAGE_HEIGHT) {
+				vTaskDelay(TO_REJECT_DELAY);
 				sg90_calculate_duty(C8);
 			}
 			else {
-				vTaskDelay(2000);
+				vTaskDelay(MOVE_SERVO_DELAY);
 				sg90_calculate_duty(pulsewidth[column]);
 				count++;
 			}
