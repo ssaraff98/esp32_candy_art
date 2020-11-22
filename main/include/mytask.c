@@ -168,7 +168,7 @@ void test_for_one_revolution_task() {
 		{'R', 'P', 'R', 'P', 'P', 'P', 'P', 'P'}, 
 		{'P', 'G', 'R', 'G', 'R', 'R', 'G', 'R'}, 
 		{'R', 'P', 'P', 'P', 'P', 'P', 'P', 'G'},
-		{'R', 'G', 'R', 'R', 'G', 'R', 'G', 'R'}
+		{'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'}
 	};
 
 	double pulsewidth[9] = {C0, C1, C2, C3, C4, C5, C6, C7, C8};

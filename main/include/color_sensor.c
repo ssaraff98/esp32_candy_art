@@ -153,13 +153,6 @@ esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_int
  * Getting raw 16 bit RGBC value from TCS34725
  *************************************************/
 esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_rgbc_data_t *rgbc_values) {
-	// Checking if TCS34725 has been initialized
-	/*
-	if (!(sensor->initialized)) {
-		return ESP_FAIL;
-	}
-	*/
-	
 	uint8_t red[2];
 	uint8_t green[2];
 	uint8_t blue[2];
@@ -171,11 +164,6 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, blue, 2));
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, clear, 2));
 
-	// printf("Red: %u %u\n", red[0], red[1]);
-	// printf("Green: %u %u\n", green[0], green[1]);
-	// printf("Blue: %u %u\n", blue[0], blue[1]);
-	// printf("Clear: %u %u\n", clear[0], clear[1]);
-
 	vTaskDelay(10);
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
@@ -183,8 +171,6 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	rgbc_values->green = _convert_from_uint8_to_uint16(green[0], green[1]);
 	rgbc_values->blue = _convert_from_uint8_to_uint16(blue[0], blue[1]);
 	rgbc_values->clear = _convert_from_uint8_to_uint16(clear[0], clear[1]);
-
-	// printf("Red 16: %u, Green 16: %u, Blue 16: %u, Clear 16: %u\n", rgbc_values->red, rgbc_values->green, rgbc_values->blue, rgbc_values->clear);
 
 	return ESP_OK;
 }
@@ -260,7 +246,7 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		column = -1;
 
 		for (int j = 0; j < IMAGE_WIDTH; j++) {
-			if (color == pixel_info[i][j]) {
+			if (color == pixel_info[i][j] && ((i == IMAGE_HEIGHT - 1) || (i != (IMAGE_HEIGHT - 1) && pixel_info[i + 1][j] == 'X'))) {
 				row = i;
 				column = j;
 				pixel_info[i][j] = 'X';
