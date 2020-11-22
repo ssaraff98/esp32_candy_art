@@ -10,12 +10,12 @@
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="bootstrap.min.css">
         <link rel="stylesheet" href="style.css">
-        
+        <h1>Draw your own Pixel Art!</h1>
     </head>
     <body>
         <div class="container" style="padding-top: 30px;">
-            <div class="row justify-content-start">
-                <div class="col-4">
+            <div class="row justify-content-center">
+                <div class="col-6">
                     <div id="pixelcanvas">
                         <div class="canvasrow">
                             <div class="pixel" onclick="setPixelColor(this)"></div>
@@ -99,7 +99,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-3">
+                <div class="col-4">
                     <div id="palette">
                         <div class="paletterow">
                             <div class="palette_pixel" style="background-color:white;" onclick="setPenColor('white')"></div>
@@ -117,15 +117,17 @@
                             <div class="palette_pixel" style="background-color:pink;" onclick="setPenColor('pink')"></div>
                         </div>
                     </div>
-                    <div style="padding:10px 0px 10px 0px;">
-                        <button type="button" onclick="clearCanvas()">Clear</button>
-                    </div>
-                    <div style="padding:10px 0px 10px 0px;">
-                        <form action="/sent" id="drawingform" method="get">
-                            <input type="hidden" id="forminput" name="pixelarray">
-                            <input type="button" onclick="getPixelArray()" value="Done!">
-                        </form>
-                        
+                   
+                    <div style="float:left;">
+                        <div style="padding:10px 0px 10px 0px;">
+                            <button type="button" onclick="clearCanvas()">Clear</button>
+                        </div>
+                        <div style="padding:10px 0px 10px 0px;">
+                            <form action="/sent" id="drawingform" method="get">
+                                <input type="hidden" id="forminput" name="pixelarray">
+                                <input type="button" onclick="getPixelArray()" value="Done!">
+                            </form>
+                        </div>
                     </div>
                     
                 </div>

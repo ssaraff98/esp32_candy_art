@@ -1,15 +1,14 @@
-#include "esp_err.h"
-#include <freertos/FreeRTOS.h>
-#include <freertos/queue.h>
-#include <freertos/task.h>
-
 #include "myserver_config.h"
-#include "commands.h"
+#include "mytask.h"
 
 char pixelinfo_query[1024];
 int pixelinfo_flag = 0;
+int reset_flag = 0;
+int initialize_flag = 0;
 
-extern QueueHandle_t queue;
+TaskHandle_t testtaskhandle = NULL;
+TaskHandle_t steppertask = NULL;
+
 
 void spiffs_setup(){
 	ESP_LOGI(TAG, "Initializing SPIFFS");
@@ -44,30 +43,16 @@ void spiffs_setup(){
 		ESP_LOGI(TAG,"Partition size: total: %d, used: %d",total, used);
 		struct stat st;
 		if(stat("/spiffs/index.html",&st) == 0){
-			ESP_LOGI(TAG,"Found index.html file");
+			ESP_LOGI(TAG,"Found spiffs files");
 		}
 		else{
-			ESP_LOGI(TAG,"Can't find index.html file");
+			ESP_LOGI(TAG,"Can't find spiffs files");
 		}
-		if(stat("/spiffs/style.css",&st) == 0){
-			ESP_LOGI(TAG,"Found style.css file");
-		}
-		else{
-			ESP_LOGI(TAG,"Can't find style.css file");
-		}
-		if(stat("/spiffs/script.js",&st) == 0){
-			ESP_LOGI(TAG,"Found script.js file");
-		}
-		else{
-			ESP_LOGI(TAG,"Can't find script.js file");
-		}
-
 	}
 }
 
 int readFile(char *fname,httpd_req_t *req){
 	int res;
-	//int size;
 	char buf[1024];
 	
 	FILE *fd = fopen(fname,"rb");
@@ -96,6 +81,7 @@ esp_err_t send_indexhtml(httpd_req_t *req){
 	printf("main page requested\r\n");
 	httpd_resp_set_type(req,"text/html");
 	readFile("/spiffs/index.html",req);
+	
 	return ESP_OK;
 }
 
@@ -103,7 +89,7 @@ esp_err_t send_senthtml(httpd_req_t *req){
 	char* indexbuf;
 	size_t indexbuf_len;
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
-
+	
 	printf("sent_html page requested\r\n");
 	httpd_resp_set_type(req,"text/html");
 	readFile("/spiffs/sent.html",req);
@@ -118,7 +104,9 @@ esp_err_t send_senthtml(httpd_req_t *req){
 				ESP_LOGI(TAG,"FOUND URL query parameter => %s",param);
 			}
 			strcpy(pixelinfo_query,param);
+			printf("Task Created");
 			pixelinfo_flag = 1;
+			xTaskCreate(&test_task, "test_task", 2048, NULL, 1, &testtaskhandle);
 		}
 
 		free(indexbuf);
@@ -128,7 +116,6 @@ esp_err_t send_senthtml(httpd_req_t *req){
 
 esp_err_t send_drawinghtml(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
-	
 	printf("drawing page requested\r\n");
 	httpd_resp_set_type(req,"text/html");
 	readFile("/spiffs/pixeldrawing.html",req);
@@ -141,6 +128,7 @@ esp_err_t send_pickinghtml(httpd_req_t *req){
 	printf("picking page requested\r\n");
 	httpd_resp_set_type(req,"text/html");
 	readFile("/spiffs/imagepicking.html",req);
+	
 	return ESP_OK;
 }
 
@@ -154,9 +142,22 @@ esp_err_t send_indexscript(httpd_req_t *req){
 
 esp_err_t send_drawingscript(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
+	//char *message = "hello world!";
+	//httpd_resp_send(req,message,strlen(message));
+	/*
+	const char* resp_str = (const char*) readFile("/spiffs/drawingscript.js");
+
+	//seting response headers
+	httpd_resp_set_hdr(req,"status","200");
+	httpd_resp_set_hdr(req,"content-type","text/javascript; charset=UTF-8");
+	//httpd_resp_set_hdr(req,"server","ESP32-10103");
+
+	httpd_resp_send(req,resp_str, strlen(resp_str));
+	*/
 	printf("drawing script requested\r\n");
 	httpd_resp_set_type(req,"text/javascript");
 	readFile("/spiffs/drawingscript.js",req);
+
 	return ESP_OK;
 }
 
@@ -168,8 +169,17 @@ esp_err_t send_pickingscript(httpd_req_t *req){
 	return ESP_OK;
 }
 
+esp_err_t send_sentscript(httpd_req_t *req){
+	ESP_LOGI(TAG, "url %s was hit", req->uri);
+	printf("sent script requested\r\n");
+	httpd_resp_set_type(req,"text/javascript");
+	readFile("/spiffs/scriptforsent.js",req);
+	return ESP_OK;
+}
+
 esp_err_t send_css(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
+	
 	printf("css requested\r\n");
 	httpd_resp_set_type(req,"text/css");
 	readFile("/spiffs/style.css",req);
@@ -182,6 +192,7 @@ esp_err_t send_bootstrapcss(httpd_req_t *req){
 	printf("bootstrap css requested\r\n");
 	httpd_resp_set_type(req,"text/css");
 	readFile("/spiffs/bootstrap.min.css",req);
+	
 	return ESP_OK;
 }
 
@@ -190,6 +201,7 @@ esp_err_t send_jqueryscript(httpd_req_t *req){
 	printf("jquery script requested\r\n");
 	httpd_resp_set_type(req,"text/javascript");
 	readFile("/spiffs/jquery-3.5.1.min.js",req);
+	
 	return ESP_OK;
 }
 
@@ -198,6 +210,7 @@ esp_err_t send_bootstrapscript(httpd_req_t *req){
 	printf("bootstrap script requested\r\n");
 	httpd_resp_set_type(req,"text/javascript");
 	readFile("/spiffs/bootstrap.min.js",req);
+
 	return ESP_OK;
 }
 
@@ -206,6 +219,7 @@ esp_err_t send_image1(httpd_req_t *req){
 	printf("image1 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
 	readFile("/spiffs/person.png",req);
+
 	return ESP_OK;
 }
 
@@ -214,6 +228,7 @@ esp_err_t send_image2(httpd_req_t *req){
 	printf("image2 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
 	readFile("/spiffs/pikachu.png",req);
+
 	return ESP_OK;
 }
 
@@ -222,30 +237,32 @@ esp_err_t send_image3(httpd_req_t *req){
 	printf("image3 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
 	readFile("/spiffs/sonic.png",req);
+
 	return ESP_OK;
 }
 
 esp_err_t send_image4(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
+	
 	printf("image4 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
 	readFile("/spiffs/kirby.png",req);
+
 	return ESP_OK;
 }
 
 esp_err_t reset_req(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
-	char *message = "Restarting in 3sec";
 	
 	printf("Restarting in 3 sec\n");
-	httpd_resp_set_type(req,"text/plain");
-	httpd_resp_send(req,message, strlen(message));
-
-	command_t reset;
-	reset.command_id = RESET_ID;
-
-	xQueueSend(queue, &reset, portMAX_DELAY);
-
+	httpd_resp_set_type(req,"text/html");
+	readFile("/spiffs/reset.html",req);
+	initialize_flag = 1;
+	vTaskDelete(testtaskhandle);
+	vTaskDelete(steppertask);
+	
+	printf("Task aborted");
+	
 	return ESP_OK;
 }
 
@@ -300,6 +317,12 @@ void serverconfig(){
 		.uri = "/pickingscript.js",
 		.method = HTTP_GET,
 		.handler = send_pickingscript
+	};
+
+	httpd_uri_t sent_script = {
+		.uri = "/scriptforsent.js",
+		.method = HTTP_GET,
+		.handler = send_sentscript
 	};
 
 	httpd_uri_t css_style = {
@@ -363,6 +386,7 @@ void serverconfig(){
 	httpd_register_uri_handler(server, &index_script);
 	httpd_register_uri_handler(server, &drawing_script);
 	httpd_register_uri_handler(server, &picking_script);
+	httpd_register_uri_handler(server, &sent_script);
 	httpd_register_uri_handler(server, &css_style);
 	httpd_register_uri_handler(server, &jquery_script);
 	httpd_register_uri_handler(server, &bootstrap_script);

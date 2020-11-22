@@ -1,6 +1,5 @@
 let penColor = 'white';
 
-
 function setPenColor(chosen_color){
     penColor = chosen_color;
 }
@@ -28,6 +27,7 @@ function getPixelArray(){
     console.log(pixelarray);
     document.getElementById("forminput").value = pixelarray;
     document.getElementById("drawingform").submit();
+    sessionStorage.setItem("drawingarray",JSON.stringify(pixelarray));
     
     return;
 }

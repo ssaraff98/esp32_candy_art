@@ -78,6 +78,5 @@ void sg90_position0() {
  * Stop rotation of SG90
  *****************************/
 void sg90_stop() {
-    printf("Stopping servo motor\n");
     ledc_stop(SPEED_MODE, CHANNEL, 0);
 }

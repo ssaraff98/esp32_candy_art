@@ -154,9 +154,11 @@ esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_int
  *************************************************/
 esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_rgbc_data_t *rgbc_values) {
 	// Checking if TCS34725 has been initialized
+	/*
 	if (!(sensor->initialized)) {
 		return ESP_FAIL;
 	}
+	*/
 	
 	uint8_t red[2];
 	uint8_t green[2];
@@ -169,6 +171,11 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, blue, 2));
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, clear, 2));
 
+	// printf("Red: %u %u\n", red[0], red[1]);
+	// printf("Green: %u %u\n", green[0], green[1]);
+	// printf("Blue: %u %u\n", blue[0], blue[1]);
+	// printf("Clear: %u %u\n", clear[0], clear[1]);
+
 	vTaskDelay(10);
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
@@ -176,6 +183,8 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	rgbc_values->green = _convert_from_uint8_to_uint16(green[0], green[1]);
 	rgbc_values->blue = _convert_from_uint8_to_uint16(blue[0], blue[1]);
 	rgbc_values->clear = _convert_from_uint8_to_uint16(clear[0], clear[1]);
+
+	// printf("Red 16: %u, Green 16: %u, Blue 16: %u, Clear 16: %u\n", rgbc_values->red, rgbc_values->green, rgbc_values->blue, rgbc_values->clear);
 
 	return ESP_OK;
 }
@@ -198,11 +207,6 @@ esp_err_t i2c_tcs34725_set_interrupt(i2c_port_t i2c_num, bool flag) {
 	return ESP_OK;
 }
 
-void tcs34725_stop() {
-	printf("Stopping color sensor\n");
-	_tcs34725_disable(I2C_PORT_NUM);
-}
-
 /**********************************************************************
  * Normalizing RGBC values to 0-255 and checking against pixel data
  **********************************************************************/
@@ -222,11 +226,11 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 	char color = '\0';
 
 	// Matching color detected
-	if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
-		printf("Red\n");
-		color = 'R';
-	}
-	else if ((red >= 127 - THRESHOLD && red <= 127 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
+	// if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
+	// 	printf("Red\n");
+	// 	color = 'R';
+	// }
+	if ((red >= 150 - THRESHOLD && red <= 150 + THRESHOLD) && (green >= 58 - THRESHOLD && green <= 58 + THRESHOLD) && (blue >= 58 - THRESHOLD && blue <= 58 + THRESHOLD)) {
 		printf("Purple\n");
 		color = 'P';
 	}
@@ -240,13 +244,15 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		color = 'O';
 	}
 	// else if (green == 42.5 && blue == 42.5) {
-	else if ((red >= 153 - THRESHOLD && red <= 153 + THRESHOLD) && (green >= 65 - THRESHOLD && green <= 65 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
-		printf("Yellow\n");
-		color = 'Y';
-	}
+	// else if ((red >= 153 - THRESHOLD && red <= 153 + THRESHOLD) && (green >= 65 - THRESHOLD && green <= 65 + THRESHOLD) && (blue >= 25 - THRESHOLD && blue <= 25 + THRESHOLD)) {
+	// 	printf("Yellow\n");
+	// 	color = 'Y';
+	// }
 	else {
-		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
+
+	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
 	int row = -1;
 	int column = -1;

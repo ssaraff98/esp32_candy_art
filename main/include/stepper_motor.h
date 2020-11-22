@@ -34,13 +34,10 @@
 
 // DRV8825 Variables
 #define MAX_FREQUENCY           250000                          // Maximum frequency in Hz of DRV8825                   
-#define MAX_STEPS               4320                            // Maximum number of steps of DRV8825
-#define STEPS_PER_REV           200                             // Number of steps per revolution of DRV8825
+#define MAX_STEPS               4320
+#define STEPS_PER_REV           200
 
-// Delay Variables
-#define DISTANCE_BETWEEN_SPOKES_DELAY   40                      // Delay between two spokes of the wheel
-
-extern QueueHandle_t queue;
+#define STEP_MULTIPLE           40
 
 /************************
 * STRUCTS
@@ -57,6 +54,5 @@ typedef struct drv8825 {
 esp_err_t drv8825_gpio_init();
 esp_err_t drv8825_init(drv8825_t *stepper_motor, int direction, int num_steps);
 void drv8825_rotate(drv8825_t *stepper_motor);
-void drv8825_stop();
 
 #endif

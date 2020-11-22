@@ -52,8 +52,6 @@
 #define C7                      2164                   // Column 7 at angle 157.5 degrees has pulsewidth 2162.5 uS
 #define C8                      2400                     // Column 8 at angle 180 degrees has pulsewidth 2400 uS
 
-extern QueueHandle_t queue;
-
 /************************
 * FUNCTION DEFINITIONS
 *************************/

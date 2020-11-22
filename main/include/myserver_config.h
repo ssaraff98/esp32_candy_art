@@ -10,7 +10,6 @@
 
 #define TAG "MY SERVER"
 
-
 void spiffs_setup();
 int readFile(char *fname,httpd_req_t *req);
 esp_err_t send_indexhtml(httpd_req_t *req);
@@ -20,6 +19,7 @@ esp_err_t send_pickinghtml(httpd_req_t *req);
 esp_err_t send_indexscript(httpd_req_t *req);
 esp_err_t send_drawingscript(httpd_req_t *req);
 esp_err_t send_pickingscript(httpd_req_t *req);
+esp_err_t send_sentscript(httpd_req_t *req);
 esp_err_t send_css(httpd_req_t *req);
 esp_err_t send_bootstrapcss(httpd_req_t *req);
 esp_err_t send_jqueryscript(httpd_req_t *req);
