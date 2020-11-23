@@ -110,21 +110,56 @@ void sg90_task(void *ignore) {
 	vTaskDelete(NULL);
 }
 
+/***********************************************
+ * Testing stepper motor homing functionality
+ ***********************************************/
+esp_err_t drv8825_homing(tcs34725_t sensor) {
+	tcs34725_rgbc_data_t rgbc_values;
+	rgbc_values.red = NULL;
+	rgbc_values.green = NULL;
+	rgbc_values.blue = NULL;
+	rgbc_values.clear = NULL;
+	int count = 0;
+
+	ESP_ERROR_CHECK(gpio_set_level(DIR_PIN, LOW));
+
+	for (int i = 0; i < STEPS_PER_REV; i++) {
+		ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
+        vTaskDelay(STEP_LOW_DELAY); 
+        ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
+
+        if(i % 5 == 0) {
+            vTaskDelay(STEP_HIGH_DELAY);
+			esp_err_t ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
+			if (ret != ESP_OK) {
+				printf("Get RGB data error");
+				return;
+			}
+			if (rgbc_values.clear == 0 || (rgbc_values.red == 0 && rgbc_values.blue == 0 && rgbc_values.green == 0)) {
+				printf("Black\n");
+				count++;
+				if (count == 1) {
+					continue;
+				}
+				else if (count > 1) {
+					return ESP_OK;
+				}
+			}
+        }
+		vTaskDelay(STEP_LOW_DELAY);
+	}
+	return ESP_FAIL;
+}
+
 /***************************************
  * Testing stepper motor functionality
  ***************************************/
 void drv8825_task(void *ignore) {
-	esp_err_t ret = drv8825_gpio_init();
-	if (ret != ESP_OK) {
-		printf("DRV8825 GPIO initialization error");
-		return;
-	}
-
 	drv8825_t stepper_motor;
 	int direction = LOW;
 	int steps = STEPS_PER_REV;
 
-	ret = drv8825_init(&stepper_motor, direction, steps);
+	esp_err_t ret = drv8825_init(&stepper_motor, direction, steps);
 	if (ret != ESP_OK) {
 		printf("DRV8825 initialization error");
 		return;
@@ -138,17 +173,16 @@ void drv8825_task(void *ignore) {
 			// printf("Step number: %d\n", i);
 
 			ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
-			vTaskDelay(10);                                     // May have to change this
+			vTaskDelay(STEP_LOW_DELAY);                                     // May have to change this
 			ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
 
 			if(i % STEP_MULTIPLE == 0) {
-				vTaskDelay(1000);                               // May have to change this
+				vTaskDelay(STEP_HIGH_DELAY);                                // May have to change this
 				xEventGroupSetBits(events, SENSE_COLOR);
 			}
-			vTaskDelay(10);                                     // May have to change this
+			vTaskDelay(STEP_LOW_DELAY);                                     // May have to change this
 		}
-		vTaskDelay(10);                                         // May have to change this
-
+		vTaskDelay(STEP_LOW_DELAY);                                         // May have to change this
 	}
 	vTaskDelete(NULL);
 }
@@ -199,6 +233,14 @@ void test_for_one_revolution_task() {
 		return;
 	}
 
+	ret = drv8825_gpio_init();
+	if (ret != ESP_OK) {
+		printf("DRV8825 GPIO initialization error");
+		return;
+	}
+
+	// Setting stepper motor to default home position which under the color sensor
+	drv8825_homing(sensor);
 	// Setting servo motor to default home position which is the reject tube
 	sg90_position0();
 
@@ -240,7 +282,7 @@ void test_for_one_revolution_task() {
 			
 			column = check_rgb_color(&rgbc_values, pixel_info);
 			if (column < 0 || column >= IMAGE_HEIGHT) {
-				vTaskDelay(TO_REJECT_DELAY);
+				vTaskDelay(MOVE_SERVO_DELAY);			// Changing this to servo delay from reject delay
 				sg90_calculate_duty(C8);
 			}
 			else {

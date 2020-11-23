@@ -47,7 +47,7 @@
 #define C2                      922                      // Column 2 at angle 45 degrees has pulsewidth 975 uS
 #define C3                      1150                     // Column 3 at angle 67.5 degrees has pulsewidth 1212.5 uS
 #define C4                      1390                     // Column 4 at angle 90 degrees has pulsewidth 1450 uS
-#define C5                      1600                     // Column 5 at angle 112.5 degrees has pulsewidth 1687.5 uS
+#define C5                      1620                     // Column 5 at angle 112.5 degrees has pulsewidth 1687.5 uS !!!!!!! CHANGED FROM 1600
 #define C6                      1895                     // Column 6 at angle 135 degrees has pulsewidth 1925 uS
 #define C7                      2164                   // Column 7 at angle 157.5 degrees has pulsewidth 2162.5 uS
 #define C8                      2400                     // Column 8 at angle 180 degrees has pulsewidth 2400 uS

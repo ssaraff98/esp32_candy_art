@@ -38,7 +38,7 @@
 
 #define STEP_MULTIPLE           40                              // Approximate number of steps between two spokes of the wheel
 #define STEP_LOW_DELAY          10                              // Time in microseconds between each step
-#define STEP_HIGH_DELAY         1500                            // Total time in microseconds for which the candy stops under the color sensor
+#define STEP_HIGH_DELAY         1000                            // Total time in microseconds for which the candy stops under the color sensor
 
 /************************
 * STRUCTS

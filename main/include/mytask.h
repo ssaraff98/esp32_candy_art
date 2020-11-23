@@ -21,7 +21,7 @@
 
 // Delay Variables
 #define RECEIVE_BIT_DELAY   1               // Time taken in milliseconds to receive bits (should be lower than time for which candy stops under sensor)
-#define MOVE_SERVO_DELAY    1000            // Time taken in microseconds to move servo to correct tube for a particular candy
+#define MOVE_SERVO_DELAY    2000            // Time taken in microseconds to move servo to correct tube for a particular candy   !!!!!!!!!!!!!! CHANGED from 1000 from 1500
 #define TO_REJECT_DELAY     1000            // Time taken in milliseconds to move servo to reject tube for incorrect color
 
 void tcs34725_task(void *ignore);
