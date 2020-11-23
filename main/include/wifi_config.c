@@ -35,10 +35,15 @@ void wifiInit(){
 			.ssid_hidden = 0,
 		},
 	};
-	
+	int8_t wifi_power;
 	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP,&ap_config));
 	
+	
 	ESP_ERROR_CHECK(esp_wifi_start());
+	ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(34));
+	ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&wifi_power));
+	printf("wifi power is: %d",wifi_power);
+	printf("\n");
 	printf("My IP: " IPSTR "\n",IP2STR(&ipInfo.ip));
 
 	esp_wifi_set_ps(PS_MODE);
