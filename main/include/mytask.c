@@ -307,7 +307,7 @@ void test_task() {
 	//printf("flag: %d\n",pixelinfo_flag);
 	//vTaskDelay(pdMS_TO_TICKS(1000));
 
-	printf("pixelinfo received\n");
+	printf("Pixel information received\n");
 	
 	int x = 0;
 	int y = 1;
@@ -340,8 +340,6 @@ void test_task() {
 			printf("I2C master initialization error");
 			return;
 		}
-
-		
 		ret = i2c_tcs34725_init(I2C_PORT_NUM, &sensor, integration_time, gain);
 		if (ret != ESP_OK) {
 			printf("TCS34725 initialization error");
@@ -353,15 +351,32 @@ void test_task() {
 			printf("SG90 LEDC timer initialization error");
 			return;
 		}
-
 		ret = sg90_ledc_channel_init();
 		if (ret != ESP_OK) {
 			printf("SG90 LEDC channel initialization error");
 			return;
 		}
+
+		ret = drv8825_gpio_init();
+		if (ret != ESP_OK) {
+			printf("DRV8825 GPIO initialization error");
+			return;
+		}
 	}
 	
+	// Setting stepper motor to default home position which under the color sensor
+	drv8825_homing(sensor);
+	// Setting servo motor to default home position which is the reject tube
 	sg90_position0();
+
+	events = xEventGroupCreate();
+	if (events == NULL) {
+		printf("Event group initialization error");
+		return;
+	}
+	EventBits_t bits;
+
+	// Starting stepper motor task
 	xTaskCreate(&drv8825_task, "drv8825_task", 2048, NULL, 10, &steppertask);
 
 	int count = 0;
@@ -373,25 +388,32 @@ void test_task() {
 		rgbc_values.clear = NULL;
 		int column = -1;
 
-		esp_err_t ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
-		if (ret != ESP_OK) {
-			printf("Get RGB data error");
-			return;
-		}
-		vTaskDelay(100);			// Change according to time taken by skittle to be dropped
-		
-		column = check_rgb_color(&rgbc_values, pixel_info);
-		if (column < 0 || column >= IMAGE_HEIGHT) {
-			sg90_calculate_duty(C8);
+		bits = xEventGroupWaitBits(events, SENSE_COLOR, pdTRUE, pdFALSE, 100 / portTICK_RATE_MS);
+		if (bits == 0) {
+			// printf("Failed to receive event bits\n");
 		}
 		else {
-			sg90_calculate_duty(pulsewidth[column]);
-			count++;
+			esp_err_t ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
+			if (ret != ESP_OK) {
+				printf("Get RGB data error");
+				return;
+			}
+			vTaskDelay(3);			// Change according to time taken by skittle to be dropped
+			
+			column = check_rgb_color(&rgbc_values, pixel_info);
+			if (column < 0 || column >= IMAGE_HEIGHT) {
+				vTaskDelay(MOVE_SERVO_DELAY);			// Changing this to servo delay from reject delay
+				sg90_calculate_duty(C8);
+			}
+			else {
+				vTaskDelay(MOVE_SERVO_DELAY);
+				sg90_calculate_duty(pulsewidth[column]);
+				count++;
+			}
+			printf("Count: %d\n",count);
 		}
-		printf("this is count: %d",count);
-		printf("\n");
-		vTaskDelay(100);
 	}
+
 	pixelinfo_flag = 0;
 	initialize_flag = 1;
 	vTaskDelete(NULL);
