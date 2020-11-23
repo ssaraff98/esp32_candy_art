@@ -233,10 +233,8 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		color = 'P';
 	}
 	else {
-		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
-
-	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
 	int row = -1;
 	int column = -1;
@@ -245,11 +243,12 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		row = -1;
 		column = -1;
 
-		for (int j = 0; j < IMAGE_WIDTH; j++) {
+		for (int j = IMAGE_WIDTH - 1; j >= 0; j--) {
 			if (color == pixel_info[i][j] && ((i == IMAGE_HEIGHT - 1) || (i != (IMAGE_HEIGHT - 1) && pixel_info[i + 1][j] == 'X'))) {
 				row = i;
 				column = j;
 				pixel_info[i][j] = 'X';
+				break;
 			}
 		}
 		

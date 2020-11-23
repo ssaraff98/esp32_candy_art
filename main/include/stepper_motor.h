@@ -34,7 +34,6 @@
 
 // DRV8825 Variables
 #define MAX_FREQUENCY           250000                          // Maximum frequency in Hz of DRV8825                   
-#define MAX_STEPS               4320
 #define STEPS_PER_REV           200                             // Tota number of steps in one revolution of the stepper
 
 #define STEP_MULTIPLE           40                              // Approximate number of steps between two spokes of the wheel
