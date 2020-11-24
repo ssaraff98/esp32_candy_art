@@ -141,19 +141,6 @@ esp_err_t send_indexscript(httpd_req_t *req){
 }
 
 esp_err_t send_drawingscript(httpd_req_t *req){
-	ESP_LOGI(TAG, "url %s was hit", req->uri);
-	//char *message = "hello world!";
-	//httpd_resp_send(req,message,strlen(message));
-	/*
-	const char* resp_str = (const char*) readFile("/spiffs/drawingscript.js");
-
-	//seting response headers
-	httpd_resp_set_hdr(req,"status","200");
-	httpd_resp_set_hdr(req,"content-type","text/javascript; charset=UTF-8");
-	//httpd_resp_set_hdr(req,"server","ESP32-10103");
-
-	httpd_resp_send(req,resp_str, strlen(resp_str));
-	*/
 	printf("drawing script requested\r\n");
 	httpd_resp_set_type(req,"text/javascript");
 	readFile("/spiffs/drawingscript.js",req);

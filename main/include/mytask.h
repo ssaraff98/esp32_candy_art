@@ -13,7 +13,7 @@
 #include "include/servo_motor.h"
 #include "include/stepper_motor.h"
 
-#define IMAGE_WIDTH         8               // Pixel art image wdith
+#define IMAGE_WIDTH         8               // Pixel art image width
 #define IMAGE_HEIGHT        8               // Pixel art image height
 
 #define BIT_0               (1 << 0)
@@ -21,7 +21,7 @@
 
 // Delay Variables
 #define RECEIVE_BIT_DELAY   1               // Time taken in milliseconds to receive bits (should be lower than time for which candy stops under sensor)
-#define MOVE_SERVO_DELAY    2000            // Time taken in microseconds to move servo to correct tube for a particular candy   !!!!!!!!!!!!!! CHANGED from 1000 from 1500
+#define MOVE_SERVO_DELAY    1000             // Time taken in microseconds to move servo to correct tube for a particular candy   !!!!!!!!!!!!!! CHANGED from 1000
 #define TO_REJECT_DELAY     1000            // Time taken in milliseconds to move servo to reject tube for incorrect color
 
 void tcs34725_task(void *ignore);

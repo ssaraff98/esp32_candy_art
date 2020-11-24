@@ -164,7 +164,7 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, blue, 2));
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, clear, 2));
 
-	vTaskDelay(10);
+	vTaskDelay(10);		// May change this !!! 10
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
 	rgbc_values->red = _convert_from_uint8_to_uint16(red[0], red[1]);
@@ -200,23 +200,23 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 	// Normalizing RGBC colors to 0-255
 	uint32_t max = rgbc_values->clear;
 
-	if (rgbc_values->clear == 0) {
-		printf("Black\n");
-		return -1;
-	}
-
 	float red = (float)rgbc_values->red / max * 255.0;
 	float green = (float)rgbc_values->green / max * 255.0;
 	float blue = (float)rgbc_values->blue / max * 255.0;
 
 	char color = '\0';
 
+	if ((red == 0 && green == 0 && blue == 0) || rgbc_values->clear == 0) {
+		printf("Black\n");
+		return -1;
+	}
+
 	// Matching color detected
 	if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
 		printf("Red\n");
 		color = 'R';
 	}
-	if ((red >= 150 - THRESHOLD && red <= 150 + THRESHOLD) && (green >= 58 - THRESHOLD && green <= 58 + THRESHOLD) && (blue >= 58 - THRESHOLD && blue <= 58 + THRESHOLD)) {
+	else if ((red >= 150 - THRESHOLD && red <= 150 + THRESHOLD) && (green >= 58 - THRESHOLD && green <= 58 + THRESHOLD) && (blue >= 58 - THRESHOLD && blue <= 58 + THRESHOLD)) {
 		printf("Purple\n");
 		color = 'P';
 	}
@@ -233,8 +233,9 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		color = 'P';
 	}
 	else {
-		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
+	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
 	int row = -1;
 	int column = -1;

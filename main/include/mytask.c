@@ -9,7 +9,6 @@ extern int reset_flag;
 extern TaskHandle_t steppertask;
 extern int initialize_flag;
 
-QueueHandle_t queue;
 EventGroupHandle_t events;
 
 /***************************************
@@ -119,17 +118,16 @@ esp_err_t drv8825_homing(tcs34725_t sensor) {
 	rgbc_values.green = NULL;
 	rgbc_values.blue = NULL;
 	rgbc_values.clear = NULL;
-	int count = 0;
 
 	ESP_ERROR_CHECK(gpio_set_level(DIR_PIN, LOW));
 
 	for (int i = 0; i < STEPS_PER_REV; i++) {
 		ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
-        vTaskDelay(STEP_LOW_DELAY); 
+        vTaskDelay(STEP_LOW_DELAY / portTICK_PERIOD_MS); 
         ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
 
         if(i % 5 == 0) {
-            vTaskDelay(STEP_HIGH_DELAY);
+            vTaskDelay(STEP_HIGH_DELAY / portTICK_PERIOD_MS);
 			esp_err_t ret = i2c_tcs34725_get_rgbc_data(I2C_PORT_NUM, &sensor, &rgbc_values);
 			if (ret != ESP_OK) {
 				printf("Get RGB data error");
@@ -137,16 +135,10 @@ esp_err_t drv8825_homing(tcs34725_t sensor) {
 			}
 			if (rgbc_values.clear == 0 || (rgbc_values.red == 0 && rgbc_values.blue == 0 && rgbc_values.green == 0)) {
 				printf("Black\n");
-				count++;
-				if (count == 1) {
-					continue;
-				}
-				else if (count > 1) {
-					return ESP_OK;
-				}
+				return ESP_OK;
 			}
         }
-		vTaskDelay(STEP_LOW_DELAY);
+		vTaskDelay(STEP_LOW_DELAY / portTICK_PERIOD_MS);
 	}
 	return ESP_FAIL;
 }
@@ -173,16 +165,18 @@ void drv8825_task(void *ignore) {
 			// printf("Step number: %d\n", i);
 
 			ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, HIGH));
-			vTaskDelay(STEP_LOW_DELAY);                                     // May have to change this
+			vTaskDelay(STEP_LOW_DELAY / portTICK_PERIOD_MS);                                     // May have to change this
 			ESP_ERROR_CHECK(gpio_set_level(STEP_PIN, LOW));
 
 			if(i % STEP_MULTIPLE == 0) {
-				vTaskDelay(STEP_HIGH_DELAY);                                // May have to change this
+				vTaskDelay(STEP_HIGH_DELAY / portTICK_PERIOD_MS);                                // May have to change this
 				xEventGroupSetBits(events, SENSE_COLOR);
+			}vTaskDelete(NULL);
+			else {
+				vTaskDelay(STEP_LOW_DELAY / portTICK_PERIOD_MS);                                 // May have to change this
 			}
-			vTaskDelay(STEP_LOW_DELAY);                                     // May have to change this
 		}
-		vTaskDelay(STEP_LOW_DELAY);                                         // May have to change this
+		vTaskDelay(STEP_LOW_DELAY / portTICK_PERIOD_MS);                                         // May have to change this
 	}
 	vTaskDelete(NULL);
 }
@@ -195,14 +189,14 @@ void test_for_one_revolution_task() {
 	
 	// Test pixel art image
 	char pixel_info[IMAGE_HEIGHT][IMAGE_WIDTH] = {
-		{'R', 'P', 'P', 'R', 'R', 'G', 'R', 'G'}, 
-		{'P', 'R', 'P', 'G', 'P', 'G', 'G', 'G'}, 
-		{'R', 'R', 'R', 'R', 'R', 'P', 'P', 'P'}, 
-		{'P', 'G', 'P', 'G', 'O', 'G', 'R', 'O'}, 
-		{'R', 'P', 'R', 'P', 'P', 'P', 'P', 'P'}, 
-		{'P', 'G', 'R', 'G', 'R', 'R', 'G', 'R'}, 
-		{'R', 'P', 'P', 'P', 'P', 'P', 'P', 'G'},
-		{'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R'}
+		{'G', 'G', 'P', 'P', 'P', 'G', 'G', 'G'}, 
+		{'G', 'P', 'G', 'G', 'G', 'P', 'G', 'G'}, 
+		{'P', 'G', 'G', 'G', 'G', 'G', 'P', 'G'}, 
+		{'P', 'G', 'G', 'G', 'G', 'P', 'G', 'G'}, 
+		{'P', 'G', 'G', 'G', 'P', 'G', 'G', 'G'}, 
+		{'P', 'G', 'G', 'G', 'G', 'P', 'G', 'G'}, 
+		{'G', 'P', 'G', 'G', 'G', 'G', 'P', 'G'},
+		{'G', 'G', 'P', 'P', 'P', 'P', 'G', 'G'}
 	};
 
 	double pulsewidth[9] = {C0, C1, C2, C3, C4, C5, C6, C7, C8};
@@ -244,11 +238,6 @@ void test_for_one_revolution_task() {
 	// Setting servo motor to default home position which is the reject tube
 	sg90_position0();
 
-	queue = xQueueCreate(10, sizeof(int));
-	if (queue == 0) {
-		printf("Queue initialization error");
-		return;
-	}
 	events = xEventGroupCreate();
 	if (events == NULL) {
 		printf("Event group initialization error");
@@ -278,15 +267,15 @@ void test_for_one_revolution_task() {
 				printf("Get RGB data error");
 				return;
 			}
-			vTaskDelay(3);			// Change according to time taken by skittle to be dropped
+			// vTaskDelay(3);			// Change according to time taken by skittle to be dropped
 			
 			column = check_rgb_color(&rgbc_values, pixel_info);
 			if (column < 0 || column >= IMAGE_HEIGHT) {
-				vTaskDelay(MOVE_SERVO_DELAY);			// Changing this to servo delay from reject delay
+				vTaskDelay(MOVE_SERVO_DELAY / portTICK_RATE_MS);			// Changing this to servo delay from reject delay
 				sg90_calculate_duty(C8);
 			}
 			else {
-				vTaskDelay(MOVE_SERVO_DELAY);
+				vTaskDelay(MOVE_SERVO_DELAY / portTICK_RATE_MS);
 				sg90_calculate_duty(pulsewidth[column]);
 				count++;
 			}
@@ -296,6 +285,7 @@ void test_for_one_revolution_task() {
 
 	vTaskDelete(NULL);
 	printf("Task completed");
+	vTaskDelete(NULL);
 }
 
 /***************************************
@@ -304,9 +294,6 @@ void test_for_one_revolution_task() {
 void test_task() {
 	
 	printf("Test task initiated\n");
-	//printf("flag: %d\n",pixelinfo_flag);
-	//vTaskDelay(pdMS_TO_TICKS(1000));
-
 	printf("Pixel information received\n");
 	
 	int x = 0;
@@ -330,10 +317,12 @@ void test_task() {
 		}
 		printf("\n");
 	}
+
 	double pulsewidth[9] = {C0, C1, C2, C3, C4, C5, C6, C7, C8};
 	tcs34725_t sensor;
 	tcs34725_integration_time_t integration_time = integration_time_2_4ms;
 	tcs34725_gain_t gain = gain_1x;
+
 	if(initialize_flag == 0){
 		esp_err_t ret = i2c_master_init(I2C_PORT_NUM);
 		if (ret != ESP_OK) {
@@ -388,7 +377,7 @@ void test_task() {
 		rgbc_values.clear = NULL;
 		int column = -1;
 
-		bits = xEventGroupWaitBits(events, SENSE_COLOR, pdTRUE, pdFALSE, 100 / portTICK_RATE_MS);
+		bits = xEventGroupWaitBits(events, SENSE_COLOR, pdTRUE, pdFALSE, 500 / portTICK_RATE_MS); // 100 to 500
 		if (bits == 0) {
 			// printf("Failed to receive event bits\n");
 		}
@@ -398,15 +387,14 @@ void test_task() {
 				printf("Get RGB data error");
 				return;
 			}
-			vTaskDelay(3);			// Change according to time taken by skittle to be dropped
 			
 			column = check_rgb_color(&rgbc_values, pixel_info);
 			if (column < 0 || column >= IMAGE_HEIGHT) {
-				vTaskDelay(MOVE_SERVO_DELAY);			// Changing this to servo delay from reject delay
+				vTaskDelay(MOVE_SERVO_DELAY / portTICK_PERIOD_MS);			// Changing this to servo delay from reject delay
 				sg90_calculate_duty(C8);
 			}
 			else {
-				vTaskDelay(MOVE_SERVO_DELAY);
+				vTaskDelay(MOVE_SERVO_DELAY / portTICK_PERIOD_MS);
 				sg90_calculate_duty(pulsewidth[column]);
 				count++;
 			}
