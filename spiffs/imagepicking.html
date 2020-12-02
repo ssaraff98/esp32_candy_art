@@ -14,11 +14,11 @@
             <a nohref class="next round" onclick="carousel_next()">&#8250;</a>
             <div class="carousel-slide">
                 <!--last image needs to be cloned at the start-->
-                <img src="kirby.png" id="lastClone">
+                <img src="aliens.png" id="lastClone">
                 <img src="person.png">
-                <img src="pikachu.png">
-                <img src="sonic.png">
-                <img src="kirby.png">
+                <img src="pacman.png">
+                <img src="pacmanmonst.png">
+                <img src="aliens.png">
                 <img src="person.png" id="firstClone">
                 <!--first image needs to be cloned at the end-->
             </div>
@@ -28,6 +28,9 @@
                 <input type="hidden" id="pickingforminput" name="pixelarray">
                 <input class="eightbit-btn" type="button" onclick="getpickingarray()" value="Pick this one!!!">
             </form>
+        </div>
+        <div class="pickbutton">
+            <button class="eightbit-btn eightbit-btn--proceed" onclick="window.location.href='pixeldrawing.html';">Draw your own Pixel Art</button>
         </div>
         <script src="pickingscript.js" async defer></script>
         

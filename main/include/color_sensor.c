@@ -17,24 +17,24 @@ esp_err_t _i2c_master_read_slave_register(i2c_port_t i2c_num, uint8_t i2c_regist
 	}
 
 	i2c_cmd_handle_t cmd_link = i2c_cmd_link_create();					// Creating command link between master and slave
-	i2c_master_start(cmd_link);											// Sending start signal on the I2C bus
+	ESP_ERROR_CHECK(i2c_master_start(cmd_link));											// Sending start signal on the I2C bus
 
 	// Writing the 7-bit slave address to queue with the last bit set to write
-	i2c_master_write_byte(cmd_link, (TCS34725_ADDRESS << 1) | I2C_MASTER_WRITE, ACK_CHECK_ENABLE);
-	i2c_master_write_byte(cmd_link, COMMAND_BIT | i2c_register, ACK_CHECK_ENABLE);	// Sending desired register to be written
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd_link, (TCS34725_ADDRESS << 1) | I2C_MASTER_WRITE, ACK_CHECK_ENABLE));
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd_link, COMMAND_BIT | i2c_register, ACK_CHECK_ENABLE));	// Sending desired register to be written
 
-	i2c_master_start(cmd_link);											// Sending repeated start signal on the I2C bus
+	ESP_ERROR_CHECK(i2c_master_start(cmd_link));											// Sending repeated start signal on the I2C bus
 
 	// Writing the 7-bit slave address to queue with the last bit set to read
-	i2c_master_write_byte(cmd_link, (TCS34725_ADDRESS << 1) | I2C_MASTER_READ, ACK_CHECK_ENABLE);
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd_link, (TCS34725_ADDRESS << 1) | I2C_MASTER_READ, ACK_CHECK_ENABLE));
 
 	// Reading data from sensor and sending NACK value with final byte instead of ACK value
 	if(size > 1) {
-		i2c_master_read(cmd_link, data_read, size - 1, ACK_VALUE);
+		ESP_ERROR_CHECK(i2c_master_read(cmd_link, data_read, size - 1, ACK_VALUE));
 	}
-	i2c_master_read_byte(cmd_link, data_read + size - 1, NACK_VALUE);
+	ESP_ERROR_CHECK(i2c_master_read_byte(cmd_link, data_read + size - 1, NACK_VALUE));
 
-	i2c_master_stop(cmd_link);
+	ESP_ERROR_CHECK(i2c_master_stop(cmd_link));
 	esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd_link, I2C_TIMEOUT_MS / TICK_RATE_MS);
 	i2c_cmd_link_delete(cmd_link);
 
@@ -123,7 +123,7 @@ esp_err_t i2c_master_init(i2c_port_t i2c_num) {
 esp_err_t i2c_tcs34725_init(i2c_port_t i2c_num, tcs34725_t *sensor, tcs34725_integration_time_t integration_time, tcs34725_gain_t gain) {
 	// Checking if master is connected to slave
 	uint8_t id;
-	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, ID_ADDRESS, &id, 1));
+	_i2c_master_read_slave_register(i2c_num, ID_ADDRESS, &id, 1);
 	if (id != TCS34725_ID) {
 		printf("Sensor not connected.\n");
 		return ESP_FAIL;
@@ -164,7 +164,7 @@ esp_err_t i2c_tcs34725_get_rgbc_data(i2c_port_t i2c_num, tcs34725_t *sensor, tcs
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, B_DATA_L, blue, 2));
 	ESP_ERROR_CHECK(_i2c_master_read_slave_register(i2c_num, C_DATA_L, clear, 2));
 
-	vTaskDelay(10);		// May change this !!! 10
+	vTaskDelay(10);
 	
 	// Converting 2 8 bit values to 1 16 bit value in little endian format
 	rgbc_values->red = _convert_from_uint8_to_uint16(red[0], red[1]);
@@ -206,24 +206,33 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 
 	char color = '\0';
 
-	if ((red == 0 && green == 0 && blue == 0) || rgbc_values->clear == 0) {
-		printf("Black\n");
-		return -1;
-	}
-
 	// Matching color detected
-	if ((red >= 240 - THRESHOLD && red <= 240 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 10 - THRESHOLD && blue <= 10 + THRESHOLD)) {
+	/*
+	if ((red >= 180 - THRESHOLD && red <= 225 + THRESHOLD) && (green >= 10 - THRESHOLD && green <= 10 + THRESHOLD) && (blue >= 30 - THRESHOLD && blue <= 40 + THRESHOLD)) {
 		printf("Red\n");
 		color = 'R';
 	}
-	else if ((red >= 150 - THRESHOLD && red <= 150 + THRESHOLD) && (green >= 58 - THRESHOLD && green <= 58 + THRESHOLD) && (blue >= 58 - THRESHOLD && blue <= 58 + THRESHOLD)) {
+	
+	if ((red >= 150 - THRESHOLD && red <= 150 + THRESHOLD) && (green >= 30 - THRESHOLD && green <= 72 + THRESHOLD) && (blue >= 130 - THRESHOLD && blue <= 225 + THRESHOLD)) {
 		printf("Purple\n");
 		color = 'P';
 	}
-	else if ((red >= 100 - THRESHOLD && red <= 100 + THRESHOLD) && (green >= 100 - THRESHOLD && green <= 100 + THRESHOLD) && (blue >= 45 - THRESHOLD && blue <= 45 + THRESHOLD)) {
+	*/
+	if (rgbc_values->clear == 0 || (red == 0 && green == 0 && blue == 0)) {
+		printf("Black\n");
+		return -1;
+	}
+	if ((red <= 120 + THRESHOLD) && (red >= 40 - THRESHOLD) && (green >= 91 - THRESHOLD)) {
 		printf("Green\n");
 		color = 'G';
+		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
+	else if ((red >= 181 - THRESHOLD) && (green <= 90 - THRESHOLD) && (green >= 40 - THRESHOLD)) {
+		printf("Red\n");
+		color = 'R';
+		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+	}
+	/*
 	else if ((red >= 185 - THRESHOLD && red <= 185 + THRESHOLD) && (green >= 43 - THRESHOLD && green <= 43 + THRESHOLD) && (blue >= 15 - THRESHOLD && blue <= 15 + THRESHOLD)) {
 		printf("Red\n");
 		color = 'R';
@@ -232,10 +241,10 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 		printf("Purple\n");
 		color = 'P';
 	}
+	*/
 	else {
-		// printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
+		printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 	}
-	printf("Red: %f, Green: %f, Blue: %f\n", red, green, blue);
 
 	int row = -1;
 	int column = -1;
@@ -252,9 +261,9 @@ int check_rgb_color(tcs34725_rgbc_data_t *rgbc_values, char pixel_info[IMAGE_HEI
 				break;
 			}
 		}
-		
+		printf("Row: %d, Column: %d\n", row, column);
 		if ((row >= 0 && row < IMAGE_WIDTH) && (column >= 0 && column < IMAGE_HEIGHT)) {
-			printf("Row: %d, Column: %d\n", row, column);
+			//printf("Row: %d, Column: %d\n", row, column);
 			break;
 		}
 	}

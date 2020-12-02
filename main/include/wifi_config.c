@@ -40,7 +40,7 @@ void wifiInit(){
 	
 	
 	ESP_ERROR_CHECK(esp_wifi_start());
-	ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(34));
+	ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(52));
 	ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&wifi_power));
 	printf("wifi power is: %d",wifi_power);
 	printf("\n");

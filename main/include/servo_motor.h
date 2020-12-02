@@ -23,7 +23,7 @@
 * MACROS
 *************************/
 // LEDC Variables
-#define SERVO_PIN               16                      // Servo signal line GPIO pin
+#define SERVO_PIN               12                      // Servo signal line GPIO pin - 16
 
 #define TIMER                   LEDC_TIMER_1            // LEDC timer
 #define CHANNEL                 LEDC_CHANNEL_0          // LEDC channel

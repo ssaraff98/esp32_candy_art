@@ -68,6 +68,7 @@ void sg90_calculate_duty(double pulse_width) {
 
     ledc_set_duty(SPEED_MODE, CHANNEL, duty_bits);
     ledc_update_duty(SPEED_MODE, CHANNEL);
+    vTaskDelay(100 / portTICK_PERIOD_MS); // 500
 }
 
 void sg90_position0() {

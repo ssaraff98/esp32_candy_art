@@ -141,6 +141,19 @@ esp_err_t send_indexscript(httpd_req_t *req){
 }
 
 esp_err_t send_drawingscript(httpd_req_t *req){
+	ESP_LOGI(TAG, "url %s was hit", req->uri);
+	//char *message = "hello world!";
+	//httpd_resp_send(req,message,strlen(message));
+	/*
+	const char* resp_str = (const char*) readFile("/spiffs/drawingscript.js");
+
+	//seting response headers
+	httpd_resp_set_hdr(req,"status","200");
+	httpd_resp_set_hdr(req,"content-type","text/javascript; charset=UTF-8");
+	//httpd_resp_set_hdr(req,"server","ESP32-10103");
+
+	httpd_resp_send(req,resp_str, strlen(resp_str));
+	*/
 	printf("drawing script requested\r\n");
 	httpd_resp_set_type(req,"text/javascript");
 	readFile("/spiffs/drawingscript.js",req);
@@ -214,7 +227,7 @@ esp_err_t send_image2(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
 	printf("image2 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
-	readFile("/spiffs/pikachu.png",req);
+	readFile("/spiffs/pacman.png",req);
 
 	return ESP_OK;
 }
@@ -223,7 +236,7 @@ esp_err_t send_image3(httpd_req_t *req){
 	ESP_LOGI(TAG, "url %s was hit", req->uri);
 	printf("image3 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
-	readFile("/spiffs/sonic.png",req);
+	readFile("/spiffs/pacmanmonst.png",req);
 
 	return ESP_OK;
 }
@@ -233,7 +246,7 @@ esp_err_t send_image4(httpd_req_t *req){
 	
 	printf("image4 requested\r\n");
 	httpd_resp_set_type(req,"image/png");
-	readFile("/spiffs/kirby.png",req);
+	readFile("/spiffs/aliens.png",req);
 
 	return ESP_OK;
 }
@@ -245,6 +258,7 @@ esp_err_t reset_req(httpd_req_t *req){
 	httpd_resp_set_type(req,"text/html");
 	readFile("/spiffs/reset.html",req);
 	initialize_flag = 1;
+	eject_solenoid();
 	vTaskDelete(testtaskhandle);
 	vTaskDelete(steppertask);
 	
@@ -343,19 +357,19 @@ void serverconfig(){
 	};
 
 	httpd_uri_t image2 = {
-		.uri = "/pikachu.png",
+		.uri = "/pacman.png",
 		.method = HTTP_GET,
 		.handler = send_image2
 	};
 
 	httpd_uri_t image3 = {
-		.uri = "/sonic.png",
+		.uri = "/pacmanmonst.png",
 		.method = HTTP_GET,
 		.handler = send_image3
 	};
 
 	httpd_uri_t image4 = {
-		.uri = "/kirby.png",
+		.uri = "/aliens.png",
 		.method = HTTP_GET,
 		.handler = send_image4
 	};

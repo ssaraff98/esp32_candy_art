@@ -35,7 +35,7 @@
 #define ACK_CHECK_ENABLE        0x1
 
 #define SDA_PIN                 21              // I2C SDA pin on ESP32 NodeMCU
-#define SCL_PIN                 22              // I2C SCL pin on ESP32 NodeMCU
+#define SCL_PIN                 20              // I2C SCL pin on ESP32 NodeMCU - 22
 
 #define CLK_SPEED               400000          // Fast transmission speed - 400Kbit/s
 

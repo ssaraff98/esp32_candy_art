@@ -19,15 +19,13 @@
 #include "esp_attr.h"
 #include "soc/rtc.h"
 #include "driver/gpio.h"
-#include "driver/mcpwm.h"
-#include "soc/mcpwm_periph.h"
 
 /************************
 * MACROS
 *************************/
 // GPIO Variables
-#define DIR_PIN                 18                              // PWM direction pin on ESP32 NodeMCU
-#define STEP_PIN                19                              // PWM step pin on ESP32 NodeMCU
+#define DIR_PIN                 11                              // PWM direction pin on ESP32 NodeMCU - 18
+#define STEP_PIN                10                              // PWM step pin on ESP32 NodeMCU - 19
 
 #define HIGH                    1                               // Rotation in clockwise direction
 #define LOW                     0                               // Rotation in counter clockwise direction
@@ -37,8 +35,8 @@
 #define STEPS_PER_REV           200                             // Tota number of steps in one revolution of the stepper
 
 #define STEP_MULTIPLE           40                              // Approximate number of steps between two spokes of the wheel
-#define STEP_LOW_DELAY          10                              // Time in microseconds between each step
-#define STEP_HIGH_DELAY         1000                            // Total time in microseconds for which the candy stops under the color sensor !!! 1000
+#define STEP_LOW_DELAY          10                              // Time in microseconds between each step !!! 10
+#define STEP_HIGH_DELAY         1000                            // Total time in microseconds for which the candy stops under the color sensor
 
 /************************
 * STRUCTS

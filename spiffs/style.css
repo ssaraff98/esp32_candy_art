@@ -31,15 +31,14 @@ body {
 .eightbit-btn:before {
     top: -6px;
     left: 0;
-    border-top: 6px black solid;
-    border-bottom: 6px black solid;
+    
 }
 .eightbit-btn:after {
     left: -6px;
     top: 0;
-    border-left: 6px black solid;
-    border-right: 6px black solid;
+    
 }
+
 .eightbit-btn--reset {
     background: #e76e55;
     box-shadow: inset -4px -4px 0px 0px #8c2022;
